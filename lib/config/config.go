@@ -15,10 +15,17 @@ var configPath = map[string]string{
 	Dev:  "config/dev.yml",
 }
 
+var secrets = map[string]string{
+	"CONNECTION_STRING": "connectionString",
+	"AUTH_SECRET":       "authSecret",
+}
+
 type Config struct {
 	BuildMode        string `config:"buildMode" default:"dev"`
 	Url              string `config:"url"`
 	ConnectionString string `config:"connectionString"`
+	GoogleClientId   string `config:"googleClientId"`
+	AuthSecret       string `config:"authSecret"`
 	LogToConsole     bool   `config:"logToConsole"`
 	LogFilePath      string `config:"logFilePath"`
 }
@@ -36,7 +43,7 @@ func NewConfig() Config {
 		panic(err)
 	}
 
-	c.LoadOSEnvs(map[string]string{"CONNECTION_STRING": "connectionString"})
+	c.LoadOSEnvs(secrets)
 
 	buildMode := c.String("buildMode", "dev")
 	pathToConfig, ok := configPath[buildMode]

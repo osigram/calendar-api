@@ -3,9 +3,12 @@ package main
 import (
 	"calendar-api/lib/config"
 	"calendar-api/lib/log"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"golang.org/x/exp/slog"
 	"io"
 	"os"
+	"time"
 )
 
 func main() {
@@ -28,6 +31,16 @@ func main() {
 
 	logger.Info("Starting application...")
 
+	// Auth
+
+	// Router
+	r := chi.NewRouter()
+
+	r.Use(middleware.RequestID)
+	r.Use(middleware.RealIP)
+	r.Use(middleware.Recoverer)
+	r.Use(middleware.URLFormat)
+	r.Use(middleware.Timeout(60 * time.Second))
 }
 
 func NewLogger(cfg config.Config, w io.Writer) *slog.Logger {
