@@ -31,7 +31,8 @@ func main() {
 
 	logger.Info("Starting application...")
 
-	// Auth
+	// Source initialisation
+	// TODO: source
 
 	// Router
 	r := chi.NewRouter()
@@ -41,6 +42,8 @@ func main() {
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.URLFormat)
 	r.Use(middleware.Timeout(60 * time.Second))
+
+	// r.Use(google_auth.GoogleAuthMiddleware(logger, cfg, storage))
 }
 
 func NewLogger(cfg config.Config, w io.Writer) *slog.Logger {

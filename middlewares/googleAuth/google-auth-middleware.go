@@ -1,4 +1,4 @@
-package google_auth
+package googleAuth
 
 import (
 	"calendar-api/lib/config"
@@ -127,11 +127,11 @@ func RegisterUser(userGetSetter UserGetSetter, claims map[string]any) (*types.Us
 func getClaim(claims map[string]any, key string) (string, error) {
 	var result string
 	if resultAny, ok := claims[key]; !ok {
-		err := errors.New("unable to get" + key + " from payload")
+		err := errors.New("unable to get " + key + " from payload")
 
 		return "", err
 	} else if result, ok = resultAny.(string); !ok {
-		err := errors.New("unable to get" + key + " from payload")
+		err := errors.New("unable to get " + key + " from payload")
 
 		return "", err
 	}
