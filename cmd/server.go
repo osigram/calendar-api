@@ -1,12 +1,17 @@
 package main
 
 import (
+	"calendar-api/handlers/events"
+	"calendar-api/internal/extensions"
 	"calendar-api/lib/config"
 	"calendar-api/lib/log"
+	"calendar-api/middlewares/authmock"
+	"calendar-api/storage/postgres"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"golang.org/x/exp/slog"
 	"io"
+	"net/http"
 	"os"
 	"time"
 )
@@ -33,6 +38,12 @@ func main() {
 
 	// Source initialisation
 	// TODO: source
+	storage, err := postgres.NewStorage(cfg.ConnectionString)
+	if err != nil {
+		panic(err)
+	}
+
+	extensionMapper := extensions.NewExtensionMapper()
 
 	// Router
 	r := chi.NewRouter()
@@ -43,7 +54,17 @@ func main() {
 	r.Use(middleware.URLFormat)
 	r.Use(middleware.Timeout(60 * time.Second))
 
-	// r.Use(google_auth.GoogleAuthMiddleware(logger, cfg, storage))
+	r.Route("/event", func(r chi.Router) {
+		r.Use(authmock.MockAuthMiddleware(logger, cfg, storage))
+
+		r.Get("/byId", events.GetById(logger, storage, extensionMapper))
+		r.Get("/byDate", events.GetByDate(logger, storage, extensionMapper))
+		r.Post("/", events.Add(logger, storage))
+		r.Put("/", events.Update(logger, storage))
+		r.Delete("/", events.Delete(logger, storage))
+	})
+
+	http.ListenAndServe(":8080", r)
 }
 
 func NewLogger(cfg config.Config, w io.Writer) *slog.Logger {

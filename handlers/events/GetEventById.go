@@ -19,8 +19,8 @@ type ByIdGetter interface {
 	GetEventById(int64) (*types.Event, error)
 }
 
-func GetById(logger *slog.Logger, eventGetter ByIdGetter, extensionMapper ExtensionGetter) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func GetById(logger *slog.Logger, eventGetter ByIdGetter, extensionMapper ExtensionGetter) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		l := logger.With(
 			slog.String("op", "handlers.events.GetById"),
 			slog.String("requestId", middleware.GetReqID(r.Context())),
@@ -70,7 +70,7 @@ func GetById(logger *slog.Logger, eventGetter ByIdGetter, extensionMapper Extens
 
 		render.Status(r, 200)
 		render.JSON(w, r, event)
-	})
+	}
 }
 
 func hasUserExtension(user *types.User, id int64) bool {

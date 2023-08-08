@@ -1,8 +1,11 @@
 package extensions
 
-import "calendar-api/handlers/events"
+import (
+	"calendar-api/types"
+	"time"
+)
 
 type Extension interface {
-	events.ByIdGetter
-	events.ByDateGetter
+	GetEventById(int64) (*types.Event, error)
+	GetEventsByDate(*types.User, time.Time, time.Time) ([]types.Event, error)
 }

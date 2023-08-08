@@ -11,11 +11,11 @@ import (
 
 type Updater interface {
 	ByIdGetter
-	UpdateEvent(event types.Event) error
+	UpdateEvent(event *types.Event) error
 }
 
-func Update(logger *slog.Logger, eventUpdater Updater) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func Update(logger *slog.Logger, eventUpdater Updater) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		l := logger.With(
 			slog.String("op", "handlers.events.Update"),
 			slog.String("requestId", middleware.GetReqID(r.Context())),
@@ -52,7 +52,7 @@ func Update(logger *slog.Logger, eventUpdater Updater) http.Handler {
 		}
 
 		l.Info("updating event in db")
-		err = eventUpdater.UpdateEvent(requestBody)
+		err = eventUpdater.UpdateEvent(&requestBody)
 		if err != nil {
 			render.Status(r, 404)
 			l.Debug("err to update event in db")
@@ -60,5 +60,5 @@ func Update(logger *slog.Logger, eventUpdater Updater) http.Handler {
 		}
 
 		render.Status(r, 200)
-	})
+	}
 }

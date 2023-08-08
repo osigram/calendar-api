@@ -2,6 +2,7 @@ package googleAuth
 
 import (
 	"calendar-api/lib/config"
+	"calendar-api/middlewares"
 	"calendar-api/types"
 	"context"
 	"encoding/json"
@@ -14,12 +15,7 @@ import (
 	"strings"
 )
 
-type UserGetSetter interface {
-	GetUser(email string) (*types.User, error)
-	AddUser(user *types.User) error
-}
-
-func GoogleAuthMiddleware(logger *slog.Logger, cfg config.Config, userGetSetter UserGetSetter) func(next http.Handler) http.Handler {
+func GoogleAuthMiddleware(logger *slog.Logger, cfg config.Config, userGetSetter middlewares.UserGetSetter) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			l := logger.With(
@@ -93,7 +89,7 @@ func GoogleAuthMiddleware(logger *slog.Logger, cfg config.Config, userGetSetter 
 	}
 }
 
-func RegisterUser(userGetSetter UserGetSetter, claims map[string]any) (*types.User, error) {
+func RegisterUser(userGetSetter middlewares.UserGetSetter, claims map[string]any) (*types.User, error) {
 	var email string
 	var err error
 	if email, err = getClaim(claims, "email"); err != nil {

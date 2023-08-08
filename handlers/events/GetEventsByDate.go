@@ -12,8 +12,6 @@ import (
 	"time"
 )
 
-var DefaultTime time.Time
-
 type GetEventByDateRequest struct {
 	TimeOfStart  time.Time `json:"timeOfStart"`
 	TimeOfFinish time.Time `json:"timeOfFinish,omitempty"`
@@ -27,8 +25,8 @@ type ExtensionGetter interface {
 	Get(id int64) (extensions.Extension, error)
 }
 
-func GetByDate(logger *slog.Logger, eventGetter ByDateGetter, extensionMapper ExtensionGetter) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func GetByDate(logger *slog.Logger, eventGetter ByDateGetter, extensionMapper ExtensionGetter) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		l := logger.With(
 			slog.String("op", "handlers.events.GetByDate"),
 			slog.String("requestId", middleware.GetReqID(r.Context())),
@@ -50,10 +48,10 @@ func GetByDate(logger *slog.Logger, eventGetter ByDateGetter, extensionMapper Ex
 
 		l.Debug("getting events from db")
 
-		if requestBody.TimeOfStart == DefaultTime {
+		if requestBody.TimeOfStart.IsZero() {
 			requestBody.TimeOfStart = time.UnixMicro(0)
 		}
-		if requestBody.TimeOfFinish == DefaultTime {
+		if requestBody.TimeOfFinish.IsZero() {
 			requestBody.TimeOfFinish = time.Now().Add(52 * 365 * 24 * time.Hour)
 		}
 		events, err := eventGetter.GetEventsByDate(user, requestBody.TimeOfStart, requestBody.TimeOfFinish)
@@ -83,5 +81,5 @@ func GetByDate(logger *slog.Logger, eventGetter ByDateGetter, extensionMapper Ex
 
 		render.Status(r, 200)
 		render.JSON(w, r, events)
-	})
+	}
 }

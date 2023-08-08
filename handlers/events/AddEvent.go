@@ -10,11 +10,11 @@ import (
 )
 
 type Adder interface {
-	AddEvent(event types.Event) error
+	AddEvent(event *types.Event) error
 }
 
-func Add(logger *slog.Logger, eventAdder Adder) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func Add(logger *slog.Logger, eventAdder Adder) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		l := logger.With(
 			slog.String("op", "handlers.events.Add"),
 			slog.String("requestId", middleware.GetReqID(r.Context())),
@@ -43,7 +43,7 @@ func Add(logger *slog.Logger, eventAdder Adder) http.Handler {
 		requestBody.User = *user
 
 		l.Info("adding event to db")
-		err = eventAdder.AddEvent(requestBody)
+		err = eventAdder.AddEvent(&requestBody)
 		if err != nil {
 			render.Status(r, 500)
 			l.Error("err to add event to db")
@@ -51,5 +51,5 @@ func Add(logger *slog.Logger, eventAdder Adder) http.Handler {
 		}
 
 		render.Status(r, 200)
-	})
+	}
 }

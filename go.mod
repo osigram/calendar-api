@@ -24,6 +24,7 @@ require (
 	github.com/gookit/goutil v0.6.10 // indirect
 	github.com/imdario/mergo v0.3.15 // indirect
 	github.com/jmoiron/sqlx v1.3.5 // indirect
+	github.com/lib/pq v1.10.9 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
 	github.com/mattn/go-sqlite3 v1.14.17 // indirect
