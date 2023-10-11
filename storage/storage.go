@@ -7,7 +7,7 @@ import (
 
 type Storage interface {
 	events.Adder
-	events.ByIdGetter
+	events.ByIDGetter
 	events.ByDateGetter
 	events.Deleter
 	events.Updater

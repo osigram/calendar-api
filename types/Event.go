@@ -1,15 +1,18 @@
 package types
 
-import "time"
+import (
+	"time"
+)
 
 type Event struct {
-	Id           int64     `json:"id" db:"id"`
-	SourceId     int64     `json:"sourceId" db:"-"`
+	ID           uint      `gorm:"primaryKey;autoIncrement"`
+	SourceID     uint      `json:"sourceId" gorm:"-"`
 	Color        string    `json:"color"`
 	Name         string    `json:"name"`
 	Description  string    `json:"description"`
 	Tags         []Tag     `json:"tags"`
-	TimeOfStart  time.Time `json:"timeOfStart" db:"time_of_start"`
-	TimeOfFinish time.Time `json:"timeOfFinish" db:"time_of_finish"` // if equal with TimeOfStart - not for display
-	User         User      `json:"-" db:"user"`
+	TimeOfStart  time.Time `json:"timeOfStart"`
+	TimeOfFinish time.Time `json:"timeOfFinish"` // if equal with TimeOfStart - not for display
+	UserEmail    string    `json:"-"`
+	User         User      `json:"-" gorm:"references:Email;foreignKey:UserEmail;constraint:OnDelete:CASCADE;"`
 }

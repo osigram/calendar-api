@@ -1,6 +1,7 @@
 package types
 
 type Tag struct {
-	Id      int64  `json:"id" db:"id"`
-	TagText string `json:"tagText" db:"tag_text"`
+	ID      uint   `gorm:"primaryKey;autoIncrement"`
+	EventID uint   `gorm:"constraint:OnDelete:CASCADE;"`
+	TagText string `json:"tagText"`
 }

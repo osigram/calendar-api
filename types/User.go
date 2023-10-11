@@ -1,8 +1,8 @@
 package types
 
 type User struct {
-	Email          string          `json:"email"`
+	Email          string          `json:"email" gorm:"primaryKey"`
 	Name           string          `json:"name"`
-	PicturePath    string          `json:"picturePath" db:"picture_path"`
-	ExtensionsUsed []ExtensionData `json:"-" db:"extension_data"`
+	PicturePath    string          `json:"picturePath"`
+	ExtensionsData []ExtensionData `json:"-"`
 }

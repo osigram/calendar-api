@@ -10,13 +10,13 @@ import (
 )
 
 type DeleteRequestBody struct {
-	Id      int64 `json:"id"`
-	EventId int64 `json:"event_id"`
+	ID      uint `json:"id"`
+	EventId uint `json:"event_id"`
 }
 
 type Deleter interface {
-	events.ByIdGetter
-	DeleteTag(int64) error
+	events.ByIDGetter
+	DeleteTag(uint) error
 }
 
 func Delete(logger *slog.Logger, eventDeleter Deleter) http.HandlerFunc {
@@ -42,12 +42,12 @@ func Delete(logger *slog.Logger, eventDeleter Deleter) http.HandlerFunc {
 		}
 
 		// TODO: add validation
-		if requestBody.Id == 0 || requestBody.EventId == 0 {
+		if requestBody.ID == 0 || requestBody.EventId == 0 {
 			render.Status(r, 403)
 			l.Debug("id is null")
 			return
 		}
-		initialEvent, err := eventDeleter.GetEventById(requestBody.EventId)
+		initialEvent, err := eventDeleter.GetEventByID(requestBody.EventId)
 		if err != nil {
 			render.Status(r, 404)
 			l.Error("err to get event from db: " + err.Error())
@@ -60,7 +60,7 @@ func Delete(logger *slog.Logger, eventDeleter Deleter) http.HandlerFunc {
 		}
 		hasTag := false
 		for _, tag := range initialEvent.Tags {
-			if tag.Id == requestBody.Id {
+			if tag.ID == requestBody.ID {
 				hasTag = true
 				break
 			}
@@ -72,7 +72,7 @@ func Delete(logger *slog.Logger, eventDeleter Deleter) http.HandlerFunc {
 		}
 
 		l.Info("deleting tag from db")
-		err = eventDeleter.DeleteTag(requestBody.Id)
+		err = eventDeleter.DeleteTag(requestBody.ID)
 		if err != nil {
 			render.Status(r, 404)
 			l.Debug("err to delete tag from db: " + err.Error())

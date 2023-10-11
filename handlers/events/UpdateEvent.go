@@ -10,7 +10,7 @@ import (
 )
 
 type Updater interface {
-	ByIdGetter
+	ByIDGetter
 	UpdateEvent(event *types.Event) error
 }
 
@@ -37,11 +37,11 @@ func Update(logger *slog.Logger, eventUpdater Updater) http.HandlerFunc {
 		}
 
 		// TODO: add validation
-		if requestBody.Id == 0 || requestBody.SourceId != 0 {
+		if requestBody.ID == 0 || requestBody.SourceID != 0 {
 			render.Status(r, 403)
 			return
 		}
-		initialEvent, err := eventUpdater.GetEventById(requestBody.Id)
+		initialEvent, err := eventUpdater.GetEventByID(requestBody.ID)
 		if err != nil {
 			render.Status(r, 404)
 			return

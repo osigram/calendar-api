@@ -10,23 +10,23 @@ import (
 	"strconv"
 )
 
-type GetEventByIdRequest struct {
-	Id     int64 `json:"id"`
-	Source int64 `json:"source,omitempty"`
+type GetEventByIDRequest struct {
+	Id     uint `json:"id"`
+	Source uint `json:"source,omitempty"`
 }
 
-type ByIdGetter interface {
-	GetEventById(int64) (*types.Event, error)
+type ByIDGetter interface {
+	GetEventByID(uint) (*types.Event, error)
 }
 
-func GetById(logger *slog.Logger, eventGetter ByIdGetter, extensionMapper ExtensionGetter) http.HandlerFunc {
+func GetByID(logger *slog.Logger, eventGetter ByIDGetter, extensionMapper ExtensionGetter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l := logger.With(
 			slog.String("op", "handlers.events.GetById"),
 			slog.String("requestId", middleware.GetReqID(r.Context())),
 		)
 
-		var requestBody GetEventByIdRequest
+		var requestBody GetEventByIDRequest
 		err := render.DecodeJSON(r.Body, &requestBody)
 		if err != nil {
 			render.Status(r, 400)
@@ -41,7 +41,7 @@ func GetById(logger *slog.Logger, eventGetter ByIdGetter, extensionMapper Extens
 			return
 		}
 
-		var eg ByIdGetter
+		var eg ByIDGetter
 		if requestBody.Source == 0 {
 			eg = eventGetter
 		} else {
@@ -61,10 +61,16 @@ func GetById(logger *slog.Logger, eventGetter ByIdGetter, extensionMapper Extens
 		}
 
 		l.Info("getting event from db")
-		event, err := eg.GetEventById(requestBody.Id)
+		event, err := eg.GetEventByID(requestBody.Id)
 		if err != nil {
 			render.Status(r, 404)
 			l.Debug("err to get event from db")
+			return
+		}
+
+		if user.Email != event.UserEmail {
+			render.Status(r, 401)
+			l.Debug("user is not the owner of this event")
 			return
 		}
 
@@ -73,9 +79,9 @@ func GetById(logger *slog.Logger, eventGetter ByIdGetter, extensionMapper Extens
 	}
 }
 
-func hasUserExtension(user *types.User, id int64) bool {
-	for _, ed := range user.ExtensionsUsed {
-		if id == ed.Id {
+func hasUserExtension(user *types.User, id uint) bool {
+	for _, ed := range user.ExtensionsData {
+		if id == ed.ID {
 			return true
 		}
 	}

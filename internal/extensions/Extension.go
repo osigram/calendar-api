@@ -6,6 +6,6 @@ import (
 )
 
 type Extension interface {
-	GetEventById(int64) (*types.Event, error)
-	GetEventsByDate(*types.User, time.Time, time.Time) ([]types.Event, error)
+	GetEventByID(uint) (*types.Event, error)
+	GetEventsByDate(string, time.Time, time.Time) ([]types.Event, error)
 }

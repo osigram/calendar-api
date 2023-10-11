@@ -11,12 +11,12 @@ import (
 
 type RequestBody struct {
 	TagText string `json:"tag_text"`
-	EventId int64  `json:"event_id"`
+	EventID uint   `json:"event_id"`
 }
 
 type Adder interface {
-	events.ByIdGetter
-	AddTag(string, int64) error
+	events.ByIDGetter
+	AddTag(string, uint) error
 }
 
 func Add(logger *slog.Logger, tagAdder Adder) http.HandlerFunc {
@@ -42,13 +42,13 @@ func Add(logger *slog.Logger, tagAdder Adder) http.HandlerFunc {
 		}
 
 		// TODO: add validation
-		if requestBody.EventId == 0 || requestBody.TagText == "" {
+		if requestBody.EventID == 0 || requestBody.TagText == "" {
 			render.Status(r, 403)
 			l.Debug("validation error")
 			return
 		}
 
-		initialEvent, err := tagAdder.GetEventById(requestBody.EventId)
+		initialEvent, err := tagAdder.GetEventByID(requestBody.EventID)
 		if err != nil {
 			render.Status(r, 404)
 			l.Debug("err to get event from db: " + err.Error())
@@ -61,7 +61,7 @@ func Add(logger *slog.Logger, tagAdder Adder) http.HandlerFunc {
 		}
 
 		l.Info("adding tag to db")
-		err = tagAdder.AddTag(requestBody.TagText, requestBody.EventId)
+		err = tagAdder.AddTag(requestBody.TagText, requestBody.EventID)
 		if err != nil {
 			render.Status(r, 500)
 			l.Error("err to add tag to db: " + err.Error())

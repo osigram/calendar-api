@@ -1,6 +1,8 @@
 package types
 
 type ExtensionData struct {
-	Id             int64  `json:"id" db:"id"`
-	AdditionalData string `json:"additionalData" db:"additional_data"`
+	ID             uint   `gorm:"primaryKey;autoIncrement"`
+	UserEmail      string `gorm:"references:Email;foreignKey:UserEmail;constraint:OnDelete:CASCADE;"`
+	Extension      uint
+	AdditionalData string `json:"additionalData"`
 }

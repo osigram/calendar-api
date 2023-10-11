@@ -22,7 +22,7 @@ type ByDateGetter interface {
 }
 
 type ExtensionGetter interface {
-	Get(id int64) (extensions.Extension, error)
+	Get(id uint) (extensions.Extension, error)
 }
 
 func GetByDate(logger *slog.Logger, eventGetter ByDateGetter, extensionMapper ExtensionGetter) http.HandlerFunc {
@@ -63,14 +63,14 @@ func GetByDate(logger *slog.Logger, eventGetter ByDateGetter, extensionMapper Ex
 
 		l.Debug("getting events from extensions")
 
-		for _, extensionData := range user.ExtensionsUsed {
-			extension, err := extensionMapper.Get(extensionData.Id)
+		for _, extensionData := range user.ExtensionsData {
+			extension, err := extensionMapper.Get(extensionData.Extension)
 			if err != nil {
-				l.Error("ExtensionData " + strconv.Itoa(int(extensionData.Id)) + "is not implemented")
+				l.Error("ExtensionData " + strconv.Itoa(int(extensionData.ID)) + "is not implemented")
 				continue
 			}
 
-			extensionEvents, err := extension.GetEventsByDate(user, requestBody.TimeOfStart, requestBody.TimeOfFinish)
+			extensionEvents, err := extension.GetEventsByDate(extensionData.AdditionalData, requestBody.TimeOfStart, requestBody.TimeOfFinish)
 			if err != nil {
 				l.Error("err to get events from extension")
 				continue

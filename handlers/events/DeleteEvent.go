@@ -9,12 +9,12 @@ import (
 )
 
 type DeleteEventRequest struct {
-	Id int64 `json:"id"`
+	ID uint `json:"id"`
 }
 
 type Deleter interface {
-	ByIdGetter
-	DeleteEvent(int64) error
+	ByIDGetter
+	DeleteEvent(uint) error
 }
 
 func Delete(logger *slog.Logger, eventDeleter Deleter) http.HandlerFunc {
@@ -40,12 +40,12 @@ func Delete(logger *slog.Logger, eventDeleter Deleter) http.HandlerFunc {
 		}
 
 		// TODO: add validation
-		if requestBody.Id == 0 {
+		if requestBody.ID == 0 {
 			render.Status(r, 403)
 			l.Debug("id is null")
 			return
 		}
-		initialEvent, err := eventDeleter.GetEventById(requestBody.Id)
+		initialEvent, err := eventDeleter.GetEventByID(requestBody.ID)
 		if err != nil {
 			render.Status(r, 404)
 			l.Error("err to get event from db")
@@ -58,7 +58,7 @@ func Delete(logger *slog.Logger, eventDeleter Deleter) http.HandlerFunc {
 		}
 
 		l.Info("deleting event from db")
-		err = eventDeleter.DeleteEvent(requestBody.Id)
+		err = eventDeleter.DeleteEvent(requestBody.ID)
 		if err != nil {
 			render.Status(r, 404)
 			l.Debug("err to delete event from db")
