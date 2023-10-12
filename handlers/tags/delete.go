@@ -2,16 +2,16 @@ package tags
 
 import (
 	"calendar-api/handlers/events"
-	"calendar-api/internal/userContext"
+	"calendar-api/internal/usercontext"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
-	"golang.org/x/exp/slog"
+	"log/slog"
 	"net/http"
 )
 
 type DeleteRequestBody struct {
-	ID      uint `json:"id"`
-	EventId uint `json:"event_id"`
+	ID      uint `json:"ID"`
+	EventID uint `json:"eventID"`
 }
 
 type Deleter interface {
@@ -25,7 +25,6 @@ func Delete(logger *slog.Logger, eventDeleter Deleter) http.HandlerFunc {
 			slog.String("op", "handlers.tags.Delete"),
 			slog.String("requestId", middleware.GetReqID(r.Context())),
 		)
-
 		var requestBody DeleteRequestBody
 		err := render.DecodeJSON(r.Body, &requestBody)
 		if err != nil {
@@ -34,7 +33,7 @@ func Delete(logger *slog.Logger, eventDeleter Deleter) http.HandlerFunc {
 			return
 		}
 
-		user, err := userContext.GetUser(r.Context())
+		user, err := usercontext.GetUser(r.Context())
 		if err != nil {
 			render.Status(r, 401)
 			l.Debug("err in decoding json: " + err.Error())
@@ -42,18 +41,18 @@ func Delete(logger *slog.Logger, eventDeleter Deleter) http.HandlerFunc {
 		}
 
 		// TODO: add validation
-		if requestBody.ID == 0 || requestBody.EventId == 0 {
+		if requestBody.ID == 0 || requestBody.EventID == 0 {
 			render.Status(r, 403)
 			l.Debug("id is null")
 			return
 		}
-		initialEvent, err := eventDeleter.GetEventByID(requestBody.EventId)
+		initialEvent, err := eventDeleter.GetEventByID(requestBody.EventID)
 		if err != nil {
 			render.Status(r, 404)
 			l.Error("err to get event from db: " + err.Error())
 			return
 		}
-		if initialEvent.User.Email != user.Email {
+		if initialEvent.UserEmail != user.Email {
 			render.Status(r, 401)
 			l.Debug("user is not equal")
 			return

@@ -6,7 +6,7 @@ import (
 
 type Event struct {
 	ID           uint      `gorm:"primaryKey;autoIncrement"`
-	SourceID     uint      `json:"sourceId" gorm:"-"`
+	SourceID     uint      `json:"sourceID" gorm:"-"`
 	Color        string    `json:"color"`
 	Name         string    `json:"name"`
 	Description  string    `json:"description"`

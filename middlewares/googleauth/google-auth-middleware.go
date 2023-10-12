@@ -1,7 +1,7 @@
-package googleAuth
+package googleauth
 
 import (
-	"calendar-api/lib/config"
+	"calendar-api/internal/config"
 	"calendar-api/middlewares"
 	"calendar-api/types"
 	"context"
@@ -9,8 +9,8 @@ import (
 	"errors"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
-	"golang.org/x/exp/slog"
 	"google.golang.org/api/idtoken"
+	"log/slog"
 	"net/http"
 	"strings"
 )
@@ -110,7 +110,7 @@ func RegisterUser(userGetSetter middlewares.UserGetSetter, claims map[string]any
 		Email:          email,
 		Name:           name,
 		PicturePath:    picturePath,
-		ExtensionsUsed: nil,
+		ExtensionsData: nil,
 	}
 
 	if err = userGetSetter.AddUser(&user); err != nil {

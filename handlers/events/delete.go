@@ -1,10 +1,10 @@
 package events
 
 import (
-	"calendar-api/internal/userContext"
+	"calendar-api/internal/usercontext"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
-	"golang.org/x/exp/slog"
+	"log/slog"
 	"net/http"
 )
 
@@ -32,7 +32,7 @@ func Delete(logger *slog.Logger, eventDeleter Deleter) http.HandlerFunc {
 			return
 		}
 
-		user, err := userContext.GetUser(r.Context())
+		user, err := usercontext.GetUser(r.Context())
 		if err != nil {
 			render.Status(r, 401)
 			l.Debug(err.Error())
@@ -51,7 +51,7 @@ func Delete(logger *slog.Logger, eventDeleter Deleter) http.HandlerFunc {
 			l.Error("err to get event from db")
 			return
 		}
-		if initialEvent.User.Email != user.Email {
+		if initialEvent.UserEmail != user.Email {
 			render.Status(r, 401)
 			l.Debug("user is not equal")
 			return

@@ -1,17 +1,17 @@
 package events
 
 import (
-	"calendar-api/internal/userContext"
+	"calendar-api/internal/usercontext"
 	"calendar-api/types"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
-	"golang.org/x/exp/slog"
+	"log/slog"
 	"net/http"
 	"strconv"
 )
 
 type GetEventByIDRequest struct {
-	Id     uint `json:"id"`
+	ID     uint `json:"id"`
 	Source uint `json:"source,omitempty"`
 }
 
@@ -34,12 +34,13 @@ func GetByID(logger *slog.Logger, eventGetter ByIDGetter, extensionMapper Extens
 			return
 		}
 
-		user, err := userContext.GetUser(r.Context())
+		user, err := usercontext.GetUser(r.Context())
 		if err != nil {
 			render.Status(r, 401)
 			l.Debug(err.Error())
 			return
 		}
+		// TODO: if id == 0 return error
 
 		var eg ByIDGetter
 		if requestBody.Source == 0 {
@@ -61,7 +62,7 @@ func GetByID(logger *slog.Logger, eventGetter ByIDGetter, extensionMapper Extens
 		}
 
 		l.Info("getting event from db")
-		event, err := eg.GetEventByID(requestBody.Id)
+		event, err := eg.GetEventByID(requestBody.ID)
 		if err != nil {
 			render.Status(r, 404)
 			l.Debug("err to get event from db")

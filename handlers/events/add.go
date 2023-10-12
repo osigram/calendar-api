@@ -1,11 +1,11 @@
 package events
 
 import (
-	"calendar-api/internal/userContext"
+	"calendar-api/internal/usercontext"
 	"calendar-api/types"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
-	"golang.org/x/exp/slog"
+	"log/slog"
 	"net/http"
 )
 
@@ -28,7 +28,7 @@ func Add(logger *slog.Logger, eventAdder Adder) http.HandlerFunc {
 			return
 		}
 
-		user, err := userContext.GetUser(r.Context())
+		user, err := usercontext.GetUser(r.Context())
 		if err != nil {
 			render.Status(r, 401)
 			l.Debug(err.Error())

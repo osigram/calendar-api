@@ -1,12 +1,12 @@
 package events
 
 import (
-	"calendar-api/internal/extensions"
-	"calendar-api/internal/userContext"
+	"calendar-api/internal/extensionsmapping"
+	"calendar-api/internal/usercontext"
 	"calendar-api/types"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
-	"golang.org/x/exp/slog"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
@@ -22,7 +22,7 @@ type ByDateGetter interface {
 }
 
 type ExtensionGetter interface {
-	Get(id uint) (extensions.Extension, error)
+	Get(id uint) (extensionsmapping.Extension, error)
 }
 
 func GetByDate(logger *slog.Logger, eventGetter ByDateGetter, extensionMapper ExtensionGetter) http.HandlerFunc {
@@ -40,7 +40,7 @@ func GetByDate(logger *slog.Logger, eventGetter ByDateGetter, extensionMapper Ex
 			return
 		}
 
-		user, err := userContext.GetUser(r.Context())
+		user, err := usercontext.GetUser(r.Context())
 		if err != nil {
 			render.Status(r, 401)
 			l.Debug(err.Error())

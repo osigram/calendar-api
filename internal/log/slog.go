@@ -1,8 +1,8 @@
 package log
 
 import (
-	"golang.org/x/exp/slog"
 	"io"
+	"log/slog"
 )
 
 func NewDevLogger(w io.Writer) *slog.Logger {

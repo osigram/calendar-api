@@ -1,11 +1,11 @@
 package events
 
 import (
-	"calendar-api/internal/userContext"
+	"calendar-api/internal/usercontext"
 	"calendar-api/types"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
-	"golang.org/x/exp/slog"
+	"log/slog"
 	"net/http"
 )
 
@@ -29,7 +29,7 @@ func Update(logger *slog.Logger, eventUpdater Updater) http.HandlerFunc {
 			return
 		}
 
-		user, err := userContext.GetUser(r.Context())
+		user, err := usercontext.GetUser(r.Context())
 		if err != nil {
 			render.Status(r, 401)
 			l.Debug(err.Error())
@@ -46,7 +46,7 @@ func Update(logger *slog.Logger, eventUpdater Updater) http.HandlerFunc {
 			render.Status(r, 404)
 			return
 		}
-		if initialEvent.User.Email != user.Email {
+		if initialEvent.UserEmail != user.Email {
 			render.Status(r, 401)
 			return
 		}

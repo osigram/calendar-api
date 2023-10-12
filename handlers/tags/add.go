@@ -2,16 +2,16 @@ package tags
 
 import (
 	"calendar-api/handlers/events"
-	"calendar-api/internal/userContext"
+	"calendar-api/internal/usercontext"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
-	"golang.org/x/exp/slog"
+	"log/slog"
 	"net/http"
 )
 
 type RequestBody struct {
-	TagText string `json:"tag_text"`
-	EventID uint   `json:"event_id"`
+	TagText string `json:"tagText"`
+	EventID uint   `json:"eventID"`
 }
 
 type Adder interface {
@@ -34,7 +34,7 @@ func Add(logger *slog.Logger, tagAdder Adder) http.HandlerFunc {
 			return
 		}
 
-		user, err := userContext.GetUser(r.Context())
+		user, err := usercontext.GetUser(r.Context())
 		if err != nil {
 			render.Status(r, 401)
 			l.Debug("err to get user: " + err.Error())
@@ -54,7 +54,7 @@ func Add(logger *slog.Logger, tagAdder Adder) http.HandlerFunc {
 			l.Debug("err to get event from db: " + err.Error())
 			return
 		}
-		if initialEvent.User.Email != user.Email {
+		if initialEvent.UserEmail != user.Email {
 			render.Status(r, 401)
 			l.Debug("user != user")
 			return

@@ -1,4 +1,4 @@
-package userContext
+package usercontext
 
 import (
 	"calendar-api/types"

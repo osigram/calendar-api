@@ -1,12 +1,12 @@
 package authmock
 
 import (
-	"calendar-api/lib/config"
+	"calendar-api/internal/config"
 	"calendar-api/middlewares"
 	"calendar-api/types"
 	"context"
 	"github.com/go-chi/chi/v5/middleware"
-	"golang.org/x/exp/slog"
+	"log/slog"
 	"net/http"
 )
 
@@ -27,7 +27,7 @@ func MockAuthMiddleware(logger *slog.Logger, cfg config.Config, userGetSetter mi
 					Email:          "user@example.com",
 					Name:           "Example",
 					PicturePath:    "https://instagram.com/favicon.ico",
-					ExtensionsUsed: nil,
+					ExtensionsData: nil,
 				}
 				err = userGetSetter.AddUser(user)
 				if err != nil {

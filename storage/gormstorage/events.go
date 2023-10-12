@@ -2,6 +2,7 @@ package gormstorage
 
 import (
 	"calendar-api/types"
+	"fmt"
 	"time"
 )
 
@@ -17,7 +18,7 @@ func (gs *GormStorage) GetEventByID(id uint) (*types.Event, error) {
 	db := gs.db
 
 	var event types.Event
-	result := db.Joins("Tags").First(&event, id)
+	result := db.Preload("Tags").First(&event, id)
 
 	return &event, result.Error
 }
@@ -27,11 +28,11 @@ func (gs *GormStorage) GetEventsByDate(user *types.User, timeOfStart time.Time, 
 
 	var events []types.Event
 	result := db.Model(&types.Event{}).
-		Joins("Tags").
+		Preload("Tags").
 		Where(&types.Event{UserEmail: user.Email}).
 		Where("time_of_start > ?", timeOfStart).
 		Where("time_of_finish < ?", timeOfFinish).
-		Scan(&events)
+		Find(&events)
 
 	return events, result.Error
 }
@@ -47,7 +48,11 @@ func (gs *GormStorage) DeleteEvent(id uint) error {
 func (gs *GormStorage) UpdateEvent(event *types.Event) error {
 	db := gs.db
 
-	result := db.Save(event)
+	if event == nil {
+		return fmt.Errorf("empty event")
+	}
+
+	result := db.Model(event).Updates(*event)
 
 	return result.Error
 }

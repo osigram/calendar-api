@@ -6,7 +6,7 @@ func (gs *GormStorage) GetUser(email string) (*types.User, error) {
 	db := gs.db
 
 	var user types.User
-	result := db.Joins("ExtensionsData").First(&user, email)
+	result := db.Preload("ExtensionsData").First(&user, "email = ?", email)
 
 	return &user, result.Error
 }
