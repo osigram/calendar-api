@@ -6,6 +6,7 @@ import (
 	"calendar-api/handlers/tags"
 	"calendar-api/internal/config"
 	"calendar-api/internal/extensionsmapping"
+	"calendar-api/internal/khnure"
 	"calendar-api/internal/log"
 	"calendar-api/middlewares/authmock"
 	"calendar-api/storage/gormstorage"
@@ -46,6 +47,7 @@ func main() {
 	}
 
 	extensionMapper := extensionsmapping.NewExtensionMapper()
+	extensionMapper.RegisterExtension(1, khnure.NewTimeTableExtension())
 
 	// Router
 	r := chi.NewRouter()

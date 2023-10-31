@@ -65,11 +65,11 @@ func GetByID(logger *slog.Logger, eventGetter ByIDGetter, extensionMapper Extens
 		event, err := eg.GetEventByID(requestBody.ID)
 		if err != nil {
 			render.Status(r, 404)
-			l.Debug("err to get event from db")
+			l.Debug("err to get event from db", slog.String("error_message", err.Error()))
 			return
 		}
 
-		if user.Email != event.UserEmail {
+		if user.Email != event.UserEmail && requestBody.Source == 0 {
 			render.Status(r, 401)
 			l.Debug("user is not the owner of this event")
 			return
