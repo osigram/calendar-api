@@ -39,7 +39,6 @@ func Delete(logger *slog.Logger, eventDeleter Deleter) http.HandlerFunc {
 			return
 		}
 
-		// TODO: add validation
 		if requestBody.ID == 0 {
 			render.Status(r, 403)
 			l.Debug("id is null")

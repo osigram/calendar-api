@@ -3,16 +3,12 @@ package tags
 import (
 	"calendar-api/handlers/events"
 	"calendar-api/internal/usercontext"
+	"calendar-api/types"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
 	"log/slog"
 	"net/http"
 )
-
-type RequestBody struct {
-	TagText string `json:"tagText"`
-	EventID uint   `json:"eventID"`
-}
 
 type Adder interface {
 	events.ByIDGetter
@@ -26,7 +22,7 @@ func Add(logger *slog.Logger, tagAdder Adder) http.HandlerFunc {
 			slog.String("requestId", middleware.GetReqID(r.Context())),
 		)
 
-		var requestBody RequestBody
+		var requestBody types.Tag
 		err := render.DecodeJSON(r.Body, &requestBody)
 		if err != nil {
 			render.Status(r, 400)
@@ -41,8 +37,7 @@ func Add(logger *slog.Logger, tagAdder Adder) http.HandlerFunc {
 			return
 		}
 
-		// TODO: add validation
-		if requestBody.EventID == 0 || requestBody.TagText == "" {
+		if requestBody.EventID == 0 || requestBody.ID != 0 || requestBody.TagText == "" || requestBody.Validate() != nil {
 			render.Status(r, 403)
 			l.Debug("validation error")
 			return

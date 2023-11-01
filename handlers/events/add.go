@@ -35,8 +35,7 @@ func Add(logger *slog.Logger, eventAdder Adder) http.HandlerFunc {
 			return
 		}
 
-		// TODO: add validation
-		if requestBody.ID != 0 || requestBody.SourceID != 0 {
+		if requestBody.ID != 0 || requestBody.SourceID != 0 || requestBody.Validate() != nil {
 			render.Status(r, 403)
 			return
 		}
