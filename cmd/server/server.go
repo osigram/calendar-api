@@ -90,11 +90,12 @@ func main() {
 
 func NewLogger(cfg config.Config, w io.Writer) *slog.Logger {
 	var logger *slog.Logger
-	if cfg.BuildMode == config.Prod {
+	switch cfg.BuildMode {
+	case config.Prod:
 		logger = log.NewProdLogger(w)
-	} else if cfg.BuildMode == config.Dev {
+	case config.Dev:
 		logger = log.NewDevLogger(w)
-	} else {
+	default:
 		panic("Error to initialize logger in main")
 	}
 
