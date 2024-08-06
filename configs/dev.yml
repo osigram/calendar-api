@@ -1,0 +1,4 @@
+url: ":8082"
+enableConsoleLogging: true
+googleClientId: ""
+# logFilePath: "path"
