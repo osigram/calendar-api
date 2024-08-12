@@ -1,7 +1,7 @@
 package extensions
 
 import (
-	"calendar-api/internal/extensions/extensionsmapping"
+	"calendar-api/internal/extensions"
 	"calendar-api/internal/helpers"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
@@ -19,13 +19,13 @@ type Installer interface {
 }
 
 type ExtensionGetter interface {
-	Get(id uint) (extensionsmapping.Extension, error)
+	Get(id uint) (extensions.Extension, error)
 }
 
 func InstallOrUpdate(logger *slog.Logger, extensionInstaller Installer, extensionMapper ExtensionGetter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l := logger.With(
-			slog.String("op", "handlers.extensions.InstallOrUpdate"),
+			slog.String("op", "services.extensions.InstallOrUpdate"),
 			slog.String("requestId", middleware.GetReqID(r.Context())),
 		)
 

@@ -20,7 +20,7 @@ type Deleter interface {
 func Delete(logger *slog.Logger, extensionDeleter Deleter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l := logger.With(
-			slog.String("op", "handlers.extensions.Delete"),
+			slog.String("op", "services.extensions.Delete"),
 			slog.String("requestId", middleware.GetReqID(r.Context())),
 		)
 

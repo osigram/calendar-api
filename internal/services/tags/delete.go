@@ -1,8 +1,8 @@
 package tags
 
 import (
-	"calendar-api/internal/handlers/events"
 	"calendar-api/internal/helpers"
+	"calendar-api/internal/services/events"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
 	"log/slog"
@@ -22,7 +22,7 @@ type Deleter interface {
 func Delete(logger *slog.Logger, eventDeleter Deleter) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l := logger.With(
-			slog.String("op", "handlers.tags.Delete"),
+			slog.String("op", "services.tags.Delete"),
 			slog.String("requestId", middleware.GetReqID(r.Context())),
 		)
 		var requestBody DeleteRequestBody

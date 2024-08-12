@@ -2,8 +2,8 @@ package tags
 
 import (
 	"calendar-api/internal/core"
-	"calendar-api/internal/handlers/events"
 	"calendar-api/internal/helpers"
+	"calendar-api/internal/services/events"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
 	"log/slog"
@@ -18,7 +18,7 @@ type Adder interface {
 func Add(logger *slog.Logger, tagAdder Adder) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		l := logger.With(
-			slog.String("op", "handlers.tags.Add"),
+			slog.String("op", "services.tags.Add"),
 			slog.String("requestId", middleware.GetReqID(r.Context())),
 		)
 
