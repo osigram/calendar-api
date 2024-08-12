@@ -2,13 +2,14 @@ package main
 
 import (
 	"calendar-api/internal/config"
-	"calendar-api/internal/extensions/extensionsmapping"
+	"calendar-api/internal/extensions/extensions"
 	"calendar-api/internal/extensions/khnure"
-	"calendar-api/internal/handlers/events"
-	"calendar-api/internal/handlers/extensions"
-	"calendar-api/internal/handlers/tags"
+	"calendar-api/internal/extensions/mapper"
 	"calendar-api/internal/log"
 	"calendar-api/internal/middlewares/authmock"
+	"calendar-api/internal/services/events"
+	"calendar-api/internal/services/extensions"
+	"calendar-api/internal/services/tags"
 	"calendar-api/internal/storage"
 	"calendar-api/internal/storage/gormstorage"
 	"fmt"
@@ -40,7 +41,7 @@ func main() {
 		panic(err)
 	}
 
-	extensionMapper := extensionsmapping.NewExtensionMapper()
+	extensionMapper := mapper.NewExtensionMapper()
 	extensionMapper.RegisterExtension(1, khnure.NewTimeTableExtension())
 
 	// auth
@@ -58,7 +59,7 @@ func main() {
 
 func NewRouter(logger *slog.Logger,
 	storage storage.Storage,
-	extensionMapper *extensionsmapping.ExtensionMapper,
+	extensionMapper *mapper.ExtensionMapper,
 	authMiddleware Middleware,
 ) http.Handler {
 	r := chi.NewRouter()
@@ -100,9 +101,9 @@ func mustNewLogger(cfg config.Config, w io.Writer) *slog.Logger {
 	var logger *slog.Logger
 	switch cfg.BuildMode {
 	case config.Prod:
-		logger = log.NewProdLogger(w)
+		logger = log.MustNewProdLogger(w)
 	case config.Dev:
-		logger = log.NewDevLogger(w)
+		logger = log.MustNewDevLogger(w)
 	default:
 		panic("Error to initialize logger in main")
 	}

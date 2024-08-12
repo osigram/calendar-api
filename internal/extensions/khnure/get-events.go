@@ -1,7 +1,7 @@
 package khnure
 
 import (
-	types2 "calendar-api/internal/core"
+	"calendar-api/internal/core"
 	"fmt"
 	"math"
 	"strconv"
@@ -21,7 +21,7 @@ var Styles = map[string]string{
 	"Конс": "#98dce5",
 }
 
-func newEventFromAPIEvent(subject APIEvent) (*types2.Event, error) {
+func newEventFromAPIEvent(subject APIEvent) (*core.Event, error) {
 	var color string
 	var ok bool
 	if color, ok = Styles[subject.Type]; !ok {
@@ -63,7 +63,7 @@ func newEventFromAPIEvent(subject APIEvent) (*types2.Event, error) {
 	}
 	endTime := time.Unix(int64(endTimeUnix), 0)
 
-	return &types2.Event{
+	return &core.Event{
 		ID:       groupID*uint(math.Pow10(10)) + subjectID,
 		SourceID: 1,
 		Color:    color,
@@ -75,7 +75,7 @@ func newEventFromAPIEvent(subject APIEvent) (*types2.Event, error) {
 			subject.Auditory,
 			strings.Join(teachers, ", "),
 		),
-		Tags: []types2.Tag{
+		Tags: []core.Tag{
 			{TagText: subject.Type},
 			{TagText: subject.Subject.Brief},
 		},
@@ -84,13 +84,13 @@ func newEventFromAPIEvent(subject APIEvent) (*types2.Event, error) {
 	}, nil
 }
 
-func (t *TimeTableExtension) GetEventsByDate(additionalData string, timeOfStart time.Time, timeOfFinish time.Time) ([]types2.Event, error) {
+func (t *TimeTableExtension) GetEventsByDate(additionalData string, timeOfStart time.Time, timeOfFinish time.Time) ([]core.Event, error) {
 	subjects, err := getSubjects(additionalData, timeOfStart, timeOfFinish)
 	if err != nil {
-		return nil, fmt.Errorf("error in getting data from KhNURE API: %v", err.Error())
+		return nil, fmt.Errorf("unable to get data from KhNURE API: %v", err.Error())
 	}
 
-	result := make([]types2.Event, 0, len(subjects))
+	result := make([]core.Event, 0, len(subjects))
 	for _, subject := range subjects {
 		event, err := newEventFromAPIEvent(subject)
 		if err != nil {
@@ -102,7 +102,7 @@ func (t *TimeTableExtension) GetEventsByDate(additionalData string, timeOfStart 
 	return result, nil
 }
 
-func (t *TimeTableExtension) GetEventByID(id uint) (*types2.Event, error) {
+func (t *TimeTableExtension) GetEventByID(id uint) (*core.Event, error) {
 	groupID := id / uint(math.Pow10(10))
 	eventID := id % uint(math.Pow10(10))
 

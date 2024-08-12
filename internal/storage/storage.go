@@ -1,18 +1,18 @@
 package storage
 
 import (
-	events2 "calendar-api/internal/handlers/events"
-	extensions2 "calendar-api/internal/handlers/extensions"
-	tags2 "calendar-api/internal/handlers/tags"
 	"calendar-api/internal/middlewares"
+	"calendar-api/internal/services/events"
+	"calendar-api/internal/services/extensions"
+	"calendar-api/internal/services/tags"
 )
 
 type EventRepository interface {
-	events2.Adder
-	events2.ByIDGetter
-	events2.ByDateGetter
-	events2.Deleter
-	events2.Updater
+	events.Adder
+	events.ByIDGetter
+	events.ByDateGetter
+	events.Deleter
+	events.Updater
 }
 
 type UserRepository interface {
@@ -20,13 +20,13 @@ type UserRepository interface {
 }
 
 type TagRepository interface {
-	tags2.Adder
-	tags2.Deleter
+	tags.Adder
+	tags.Deleter
 }
 
 type ExtensionRepository interface {
-	extensions2.Installer
-	extensions2.Deleter
+	extensions.Installer
+	extensions.Deleter
 }
 
 type Storage interface {

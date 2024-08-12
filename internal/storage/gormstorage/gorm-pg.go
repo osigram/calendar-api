@@ -1,7 +1,7 @@
 package gormstorage
 
 import (
-	types2 "calendar-api/internal/core"
+	"calendar-api/internal/core"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -12,10 +12,10 @@ type GormStorage struct {
 
 func NewStorage(connectionString string) (*GormStorage, error) {
 	db, err := gorm.Open(postgres.Open(connectionString), &gorm.Config{})
-	err = initTable(db, &types2.User{}, err)
-	err = initTable(db, &types2.Event{}, err)
-	err = initTable(db, &types2.Tag{}, err)
-	err = initTable(db, &types2.ExtensionData{}, err)
+	err = initTable(db, &core.User{}, err)
+	err = initTable(db, &core.Event{}, err)
+	err = initTable(db, &core.Tag{}, err)
+	err = initTable(db, &core.ExtensionData{}, err)
 
 	return &GormStorage{db}, err
 }
