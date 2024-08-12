@@ -2,7 +2,6 @@ package main
 
 import (
 	"calendar-api/internal/config"
-	"calendar-api/internal/extensions/extensions"
 	"calendar-api/internal/extensions/khnure"
 	"calendar-api/internal/extensions/mapper"
 	"calendar-api/internal/log"
