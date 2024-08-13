@@ -9,8 +9,8 @@ import (
 )
 
 type GetEventByDateRequest struct {
-	TimeOfStart  time.Time `json:"timeOfStart"`
-	TimeOfFinish time.Time `json:"timeOfFinish,omitempty"`
+	TimeOfStart  time.Time `schema:"timeOfStart"`
+	TimeOfFinish time.Time `schema:"timeOfFinish,omitempty"`
 }
 
 type ByDateGetter interface {
@@ -41,7 +41,7 @@ func (s *Service) GetByDate(user *core.User, requestBody GetEventByDateRequest) 
 
 	l.Debug("getting events from extensions")
 	// TODO: get extensions by user
-	for _, extensionData := range user.ExtensionsData { // this is wrong path to get ExtensionsData, but it's a bug, not a refactoring problem
+	for _, extensionData := range user.ExtensionsData { // this is a wrong way to get ExtensionsData, but it's a bug, not a refactoring problem
 		extension, err := s.extensionsGetter.Get(extensionData.Extension)
 		if err != nil {
 			l.Error("Extension is not implemented", slog.Uint64("extensionID", uint64(extensionData.ID)), slog.String("err", err.Error()))

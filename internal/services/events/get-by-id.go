@@ -7,8 +7,8 @@ import (
 )
 
 type GetEventByIDRequest struct {
-	ID     uint `json:"id"`
-	Source uint `json:"source,omitempty"`
+	ID     uint `schema:"id"`
+	Source uint `schema:"source,omitempty"`
 }
 
 type ByIDGetter interface {

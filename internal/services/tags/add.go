@@ -2,12 +2,9 @@ package tags
 
 import (
 	"calendar-api/internal/core"
-	"calendar-api/internal/helpers"
+	"calendar-api/internal/errors"
 	"calendar-api/internal/services/events"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/render"
 	"log/slog"
-	"net/http"
 )
 
 type Adder interface {
@@ -15,54 +12,37 @@ type Adder interface {
 	AddTag(string, uint) error
 }
 
-func Add(logger *slog.Logger, tagAdder Adder) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		l := logger.With(
-			slog.String("op", "services.tags.Add"),
-			slog.String("requestId", middleware.GetReqID(r.Context())),
-		)
+func (s *Service) Add(user *core.User, requestBody core.Tag) error {
+	l := s.l.With(
+		slog.String("op", "services.tags.Add"),
+	)
 
-		var requestBody core.Tag
-		err := render.DecodeJSON(r.Body, &requestBody)
-		if err != nil {
-			render.Status(r, 400)
-			l.Debug("err in decoding json: " + err.Error())
-			return
-		}
-
-		user, err := helpers.GetUser(r.Context())
-		if err != nil {
-			render.Status(r, 401)
-			l.Debug("err to get user: " + err.Error())
-			return
-		}
-
-		if requestBody.EventID == 0 || requestBody.ID != 0 || requestBody.TagText == "" || requestBody.Validate() != nil {
-			render.Status(r, 403)
-			l.Debug("validation error")
-			return
-		}
-
-		initialEvent, err := tagAdder.GetEventByID(requestBody.EventID)
-		if err != nil {
-			render.Status(r, 404)
-			l.Debug("err to get event from db: " + err.Error())
-			return
-		}
-		if initialEvent.UserEmail != user.Email {
-			render.Status(r, 401)
-			l.Debug("user != user")
-			return
-		}
-
-		l.Info("adding tag to db")
-		err = tagAdder.AddTag(requestBody.TagText, requestBody.EventID)
-		if err != nil {
-			render.Status(r, 500)
-			l.Error("err to add tag to db: " + err.Error())
-			return
-		}
-
-		render.Status(r, 200)
+	if requestBody.EventID == 0 || requestBody.ID != 0 {
+		l.Debug("validation error: eventID is zero or tagID is not zero")
+		return errors.NewValidationError("eventID is zero or tagID is not zero")
 	}
+
+	if err := requestBody.Validate(); err != nil {
+		l.Debug("validation error: request body is invalid", slog.String("err", err.Error()))
+		return errors.NewValidationError("request body is invalid: " + err.Error())
+	}
+
+	initialEvent, err := s.storage.GetEventByID(requestBody.EventID)
+	if err != nil {
+		l.Debug("unable to get event from db", slog.String("err", err.Error()))
+		return errors.NewNotFoundError("event not found")
+	}
+	if initialEvent.UserEmail != user.Email {
+		l.Debug("user emails not match", slog.String("userEmail", user.Email), slog.String("eventEmail", initialEvent.UserEmail))
+		return errors.NewAuthError("wrong user")
+	}
+
+	l.Info("adding tag to db")
+	err = s.storage.AddTag(requestBody.TagText, requestBody.EventID)
+	if err != nil {
+		l.Error("unable to add tag to db", slog.String("err", err.Error()))
+		return errors.NewInternalError("unable to add tag to db")
+	}
+
+	return nil
 }

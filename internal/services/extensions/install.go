@@ -1,12 +1,9 @@
 package extensions
 
 import (
-	"calendar-api/internal/extensions"
-	"calendar-api/internal/helpers"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/render"
+	"calendar-api/internal/core"
+	"calendar-api/internal/errors"
 	"log/slog"
-	"net/http"
 )
 
 type InstallRequestBody struct {
@@ -18,58 +15,37 @@ type Installer interface {
 	InstallOrUpdateExtension(email string, extensionID uint, additionalData string) error
 }
 
-type ExtensionGetter interface {
-	Get(id uint) (extensions.Extension, error)
-}
+func (s *Service) InstallOrUpdate(user *core.User, requestBody InstallRequestBody) error {
+	l := s.l.With(
+		slog.String("op", "services.extensions.InstallOrUpdate"),
+	)
 
-func InstallOrUpdate(logger *slog.Logger, extensionInstaller Installer, extensionMapper ExtensionGetter) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		l := logger.With(
-			slog.String("op", "services.extensions.InstallOrUpdate"),
-			slog.String("requestId", middleware.GetReqID(r.Context())),
+	if requestBody.ExtensionID == 0 || requestBody.AdditionalData == "" {
+		l.Debug(
+			"validation error: extensionID is zero or additionalData is empty",
+			slog.Uint64("extensionID", uint64(requestBody.ExtensionID)),
+			slog.String("additionalData", requestBody.AdditionalData),
 		)
-
-		var requestBody InstallRequestBody
-		err := render.DecodeJSON(r.Body, &requestBody)
-		if err != nil {
-			render.Status(r, 400)
-			l.Debug("err in decoding json: " + err.Error())
-			return
-		}
-
-		user, err := helpers.GetUser(r.Context())
-		if err != nil {
-			render.Status(r, 401)
-			l.Debug("err to get user: " + err.Error())
-			return
-		}
-
-		if requestBody.ExtensionID == 0 || requestBody.AdditionalData == "" {
-			render.Status(r, 403)
-			l.Debug("validation error")
-			return
-		}
-
-		extension, err := extensionMapper.Get(requestBody.ExtensionID)
-		if err != nil {
-			render.Status(r, 404)
-			l.Debug("err to get extension from extensionMapper: " + err.Error())
-			return
-		}
-		if !extension.ValidateAdditionalData(requestBody.AdditionalData) {
-			render.Status(r, 403)
-			l.Debug("additional data validation error")
-			return
-		}
-
-		l.Info("adding ExtensionData to db")
-		err = extensionInstaller.InstallOrUpdateExtension(user.Email, requestBody.ExtensionID, requestBody.AdditionalData)
-		if err != nil {
-			render.Status(r, 500)
-			l.Error("err to add ExtensionData to db: " + err.Error())
-			return
-		}
-
-		render.Status(r, 200)
+		return errors.NewValidationError("extensionID is zero or additionalData is empty")
 	}
+
+	extension, err := s.extensionsGetter.Get(requestBody.ExtensionID)
+	if err != nil {
+		l.Debug("unable to get extension from extensionMapper", slog.String("err", err.Error()))
+		return errors.NewNotFoundError("extension not found")
+	}
+
+	if !extension.ValidateAdditionalData(requestBody.AdditionalData) {
+		l.Debug("validation error: unsuitable additional data", slog.String("additionalData", requestBody.AdditionalData))
+		return errors.NewValidationError("additional data is invalid")
+	}
+
+	l.Info("adding ExtensionData to db")
+	err = s.storage.InstallOrUpdateExtension(user.Email, requestBody.ExtensionID, requestBody.AdditionalData)
+	if err != nil {
+		l.Error("unable to add ExtensionData to db", slog.String("err", err.Error()))
+		return errors.NewInternalError("unable to install extension")
+	}
+
+	return nil
 }

@@ -4,6 +4,7 @@ import (
 	"calendar-api/internal/config"
 	"calendar-api/internal/extensions/khnure"
 	"calendar-api/internal/extensions/mapper"
+	"calendar-api/internal/handlers"
 	"calendar-api/internal/log"
 	"calendar-api/internal/middlewares/authmock"
 	"calendar-api/internal/services/events"
@@ -61,6 +62,8 @@ func NewRouter(logger *slog.Logger,
 	extensionMapper *mapper.ExtensionMapper,
 	authMiddleware Middleware,
 ) http.Handler {
+	cfg := handlers.NewConfiguration(logger, storage, extensionMapper)
+
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
@@ -72,25 +75,31 @@ func NewRouter(logger *slog.Logger,
 	r.Route("/event", func(r chi.Router) {
 		r.Use(authMiddleware)
 
-		r.Get("/byID", events.GetByID(logger, storage, extensionMapper))
-		r.Get("/byDate", events.GetByDate(logger, storage, extensionMapper))
-		r.Post("/", events.Add(logger, storage))
-		r.Put("/", events.Update(logger, storage))
-		r.Delete("/", events.Delete(logger, storage))
+		eventService := events.New(logger, storage, extensionMapper)
+
+		r.Get("/byID", handlers.Get(cfg, eventService.GetByID))
+		r.Get("/byDate", handlers.Get(cfg, eventService.GetByDate))
+		r.Post("/", handlers.Post(cfg, eventService.Add))
+		r.Put("/", handlers.Post(cfg, eventService.Update))
+		r.Delete("/", handlers.Post(cfg, eventService.Delete))
 	})
 
 	r.Route("/tag", func(r chi.Router) {
 		r.Use(authMiddleware)
 
-		r.Post("/", tags.Add(logger, storage))
-		r.Delete("/", tags.Delete(logger, storage))
+		tagsService := tags.New(logger, storage)
+
+		r.Post("/", handlers.Post(cfg, tagsService.Add))
+		r.Delete("/", handlers.Post(cfg, tagsService.Delete))
 	})
 
 	r.Route("/extension", func(r chi.Router) {
 		r.Use(authMiddleware)
 
-		r.Post("/", extensions.InstallOrUpdate(logger, storage, extensionMapper))
-		r.Delete("/", extensions.Delete(logger, storage))
+		extensionsService := extensions.New(logger, storage, extensionMapper)
+
+		r.Post("/", handlers.Post(cfg, extensionsService.InstallOrUpdate))
+		r.Delete("/", handlers.Post(cfg, extensionsService.Delete))
 	})
 
 	return r

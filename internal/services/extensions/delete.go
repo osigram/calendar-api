@@ -2,11 +2,8 @@ package extensions
 
 import (
 	"calendar-api/internal/core"
-	"calendar-api/internal/helpers"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/render"
+	"calendar-api/internal/errors"
 	"log/slog"
-	"net/http"
 )
 
 type DeleteRequestBody struct {
@@ -17,46 +14,27 @@ type Deleter interface {
 	DeleteExtension(email string, extensionID uint) error
 }
 
-func Delete(logger *slog.Logger, extensionDeleter Deleter) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		l := logger.With(
-			slog.String("op", "services.extensions.Delete"),
-			slog.String("requestId", middleware.GetReqID(r.Context())),
-		)
+func (s *Service) Delete(user *core.User, requestBody DeleteRequestBody) error {
+	l := s.l.With(
+		slog.String("op", "services.extensions.Delete"),
+	)
 
-		var requestBody DeleteRequestBody
-		err := render.DecodeJSON(r.Body, &requestBody)
-		if err != nil {
-			render.Status(r, 400)
-			l.Debug("err in decoding json: " + err.Error())
-			return
-		}
-
-		user, err := helpers.GetUser(r.Context())
-		if err != nil {
-			render.Status(r, 401)
-			l.Debug("err to get user: " + err.Error())
-			return
-		}
-
-		if !hasUserExtension(user, requestBody.ExtensionID) {
-			render.Status(r, 403)
-			l.Debug("validation error")
-			return
-		}
-
-		l.Info("deleting ExtensionData from db")
-		err = extensionDeleter.DeleteExtension(user.Email, requestBody.ExtensionID)
-		if err != nil {
-			render.Status(r, 500)
-			l.Error("err to delete ExtensionData from db: " + err.Error())
-			return
-		}
-
-		render.Status(r, 200)
+	if !hasUserExtension(user, requestBody.ExtensionID) {
+		l.Debug("validation error: user has no such extension")
+		return errors.NewValidationError("user has no such extension")
 	}
+
+	l.Info("deleting ExtensionData from db")
+	err := s.storage.DeleteExtension(user.Email, requestBody.ExtensionID)
+	if err != nil {
+		l.Error("unable to delete ExtensionData from db", slog.String("err", err.Error()))
+		return errors.NewInternalError("unable to delete extension data from db")
+	}
+
+	return nil
 }
 
+// TODO: this is a wrong way to get extensionsData, because of the auth logic. Later, should be rewritten and moved to helpers
 func hasUserExtension(user *core.User, extensionID uint) bool {
 	for _, extensionData := range user.ExtensionsData {
 		if extensionData.Extension == extensionID {
