@@ -22,14 +22,14 @@ func (s *Service) Delete(user *core.User, requestBody DeleteRequestBody) error {
 		slog.String("op", "services.tags.Delete"),
 	)
 
-	// TODO: add validation
 	if requestBody.ID == 0 || requestBody.EventID == 0 {
 		l.Debug("validation error: requestBodyID is zero or eventID is zero")
 		return errors.NewValidationError("requestBodyID is zero or eventID is zero")
 	}
+
 	initialEvent, err := s.storage.GetEventByID(requestBody.EventID)
 	if err != nil {
-		l.Error("unable to get event from db", slog.String("err", err.Error()))
+		l.Debug("unable to get event from db", slog.String("err", err.Error()))
 		return errors.NewNotFoundError("event not found")
 	}
 	if initialEvent.UserEmail != user.Email {
