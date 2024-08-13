@@ -1,7 +1,7 @@
 package tags
 
 import (
-	"calendar-api/internal/core"
+	"calendar-api/internal/context"
 	"calendar-api/internal/errors"
 	"calendar-api/internal/services/events"
 	"log/slog"
@@ -17,7 +17,7 @@ type Deleter interface {
 	DeleteTag(uint) error
 }
 
-func (s *Service) Delete(user *core.User, requestBody DeleteRequestBody) error {
+func (s *Service) Delete(ctx *context.Context, requestBody DeleteRequestBody) error {
 	l := s.l.With(
 		slog.String("op", "services.tags.Delete"),
 	)
@@ -32,8 +32,8 @@ func (s *Service) Delete(user *core.User, requestBody DeleteRequestBody) error {
 		l.Debug("unable to get event from db", slog.String("err", err.Error()))
 		return errors.NewNotFoundError("event not found")
 	}
-	if initialEvent.UserEmail != user.Email {
-		l.Debug("user emails not match", slog.String("userEmail", user.Email), slog.String("eventEmail", initialEvent.UserEmail))
+	if initialEvent.UserEmail != ctx.User.Email {
+		l.Debug("user emails not match", slog.String("userEmail", ctx.User.Email), slog.String("eventEmail", initialEvent.UserEmail))
 		return errors.NewAuthError("wrong user")
 	}
 

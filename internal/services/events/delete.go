@@ -1,7 +1,7 @@
 package events
 
 import (
-	"calendar-api/internal/core"
+	"calendar-api/internal/context"
 	"calendar-api/internal/errors"
 	"log/slog"
 )
@@ -15,7 +15,7 @@ type Deleter interface {
 	DeleteEvent(uint) error
 }
 
-func (s *Service) Delete(user *core.User, requestBody DeleteEventRequest) error {
+func (s *Service) Delete(ctx *context.Context, requestBody DeleteEventRequest) error {
 	l := s.l.With(
 		slog.String("op", "services.events.Delete"),
 	)
@@ -30,7 +30,7 @@ func (s *Service) Delete(user *core.User, requestBody DeleteEventRequest) error 
 		l.Debug("unable to get event from db")
 		return errors.NewNotFoundError("unable to get event from db")
 	}
-	if initialEvent.UserEmail != user.Email {
+	if initialEvent.UserEmail != ctx.User.Email {
 		l.Debug("user email not match")
 		return errors.NewAuthError("wrong user")
 	}

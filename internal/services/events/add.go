@@ -1,6 +1,7 @@
 package events
 
 import (
+	"calendar-api/internal/context"
 	"calendar-api/internal/core"
 	"calendar-api/internal/errors"
 	"log/slog"
@@ -10,7 +11,7 @@ type Adder interface {
 	AddEvent(event *core.Event) error
 }
 
-func (s *Service) Add(user *core.User, requestBody core.Event) error {
+func (s *Service) Add(ctx *context.Context, requestBody core.Event) error {
 	l := s.l.With(
 		slog.String("op", "services.events.Add"),
 	)
@@ -25,7 +26,7 @@ func (s *Service) Add(user *core.User, requestBody core.Event) error {
 		return errors.NewValidationError(err.Error())
 	}
 
-	requestBody.User = *user
+	requestBody.User = *ctx.User
 
 	l.Info("adding event to db")
 	err := s.storage.AddEvent(&requestBody)

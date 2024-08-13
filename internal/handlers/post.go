@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"calendar-api/internal/context"
 	"calendar-api/internal/core"
 	"calendar-api/internal/helpers"
 	"github.com/go-chi/chi/v5/middleware"
@@ -9,7 +10,7 @@ import (
 	"net/http"
 )
 
-type serviceFunc[T any] func(*core.User, T) error
+type serviceFunc[T any] func(*context.Context, T) error
 
 func Post[T any](cfg *Configuration, service serviceFunc[T]) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +34,12 @@ func Post[T any](cfg *Configuration, service serviceFunc[T]) http.HandlerFunc {
 			return
 		}
 
-		err = service(user, requestBody)
+		ctx := &context.Context{
+			Context: r.Context(),
+			User:    user,
+		}
+
+		err = service(ctx, requestBody)
 		if err != nil {
 			helpers.ProcessServiceError(w, r, err)
 			return

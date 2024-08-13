@@ -1,6 +1,7 @@
 package events
 
 import (
+	"calendar-api/internal/context"
 	"calendar-api/internal/core"
 	"calendar-api/internal/errors"
 	"calendar-api/internal/extensions"
@@ -21,7 +22,7 @@ type ExtensionGetter interface {
 	Get(id uint) (extensions.Extension, error)
 }
 
-func (s *Service) GetByDate(user *core.User, requestBody GetEventByDateRequest) ([]core.Event, error) {
+func (s *Service) GetByDate(ctx *context.Context, requestBody GetEventByDateRequest) ([]core.Event, error) {
 	l := s.l.With(
 		slog.String("op", "services.events.GetByDate"),
 	)
@@ -33,7 +34,7 @@ func (s *Service) GetByDate(user *core.User, requestBody GetEventByDateRequest) 
 	if requestBody.TimeOfFinish.IsZero() {
 		requestBody.TimeOfFinish = time.Now().Add(52 * 365 * 24 * time.Hour)
 	}
-	events, err := s.storage.GetEventsByDate(user, requestBody.TimeOfStart, requestBody.TimeOfFinish)
+	events, err := s.storage.GetEventsByDate(ctx.User, requestBody.TimeOfStart, requestBody.TimeOfFinish)
 	if err != nil {
 		l.Error("failed to get events by date", slog.String("err", err.Error()))
 		return nil, errors.NewInternalError("unable to get events from db")
@@ -41,7 +42,7 @@ func (s *Service) GetByDate(user *core.User, requestBody GetEventByDateRequest) 
 
 	l.Debug("getting events from extensions")
 	// TODO: get extensions by user
-	for _, extensionData := range user.ExtensionsData { // this is a wrong way to get ExtensionsData, but it's a bug, not a refactoring problem
+	for _, extensionData := range ctx.User.ExtensionsData { // this is a wrong way to get ExtensionsData, but it's a bug, not a refactoring problem
 		extension, err := s.extensionsGetter.Get(extensionData.Extension)
 		if err != nil {
 			l.Error("Extension is not implemented", slog.Uint64("extensionID", uint64(extensionData.ID)), slog.String("err", err.Error()))

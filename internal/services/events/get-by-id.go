@@ -1,6 +1,7 @@
 package events
 
 import (
+	"calendar-api/internal/context"
 	"calendar-api/internal/core"
 	"calendar-api/internal/errors"
 	"log/slog"
@@ -15,7 +16,7 @@ type ByIDGetter interface {
 	GetEventByID(uint) (*core.Event, error)
 }
 
-func (s *Service) GetByID(user *core.User, requestBody GetEventByIDRequest) (core.Event, error) {
+func (s *Service) GetByID(ctx *context.Context, requestBody GetEventByIDRequest) (core.Event, error) {
 	l := s.l.With(
 		slog.String("op", "services.events.GetById"),
 	)
@@ -30,7 +31,7 @@ func (s *Service) GetByID(user *core.User, requestBody GetEventByIDRequest) (cor
 	case 0:
 		eventGetter = s.storage
 	default:
-		if !hasUserExtension(user, requestBody.Source) {
+		if !hasUserExtension(ctx.User, requestBody.Source) {
 			l.Debug("validation error: source is invalid")
 			return core.Event{}, errors.NewValidationError("source is invalid")
 		}
@@ -51,7 +52,7 @@ func (s *Service) GetByID(user *core.User, requestBody GetEventByIDRequest) (cor
 		return core.Event{}, errors.NewNotFoundError("event not found")
 	}
 
-	if user.Email != event.UserEmail && requestBody.Source == 0 {
+	if ctx.User.Email != event.UserEmail && requestBody.Source == 0 {
 		l.Debug("user is not an owner of this event")
 		return core.Event{}, errors.NewAuthError("user is not an owner of this event")
 	}

@@ -1,7 +1,7 @@
 package extensions
 
 import (
-	"calendar-api/internal/core"
+	"calendar-api/internal/context"
 	"calendar-api/internal/errors"
 	"log/slog"
 )
@@ -15,7 +15,7 @@ type Installer interface {
 	InstallOrUpdateExtension(email string, extensionID uint, additionalData string) error
 }
 
-func (s *Service) InstallOrUpdate(user *core.User, requestBody InstallRequestBody) error {
+func (s *Service) InstallOrUpdate(ctx *context.Context, requestBody InstallRequestBody) error {
 	l := s.l.With(
 		slog.String("op", "services.extensions.InstallOrUpdate"),
 	)
@@ -41,7 +41,7 @@ func (s *Service) InstallOrUpdate(user *core.User, requestBody InstallRequestBod
 	}
 
 	l.Info("adding ExtensionData to db")
-	err = s.storage.InstallOrUpdateExtension(user.Email, requestBody.ExtensionID, requestBody.AdditionalData)
+	err = s.storage.InstallOrUpdateExtension(ctx.User.Email, requestBody.ExtensionID, requestBody.AdditionalData)
 	if err != nil {
 		l.Error("unable to add ExtensionData to db", slog.String("err", err.Error()))
 		return errors.NewInternalError("unable to install extension")

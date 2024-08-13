@@ -1,6 +1,7 @@
 package tags
 
 import (
+	"calendar-api/internal/context"
 	"calendar-api/internal/core"
 	"calendar-api/internal/errors"
 	"calendar-api/internal/services/events"
@@ -12,7 +13,7 @@ type Adder interface {
 	AddTag(string, uint) error
 }
 
-func (s *Service) Add(user *core.User, requestBody core.Tag) error {
+func (s *Service) Add(ctx *context.Context, requestBody core.Tag) error {
 	l := s.l.With(
 		slog.String("op", "services.tags.Add"),
 	)
@@ -32,8 +33,8 @@ func (s *Service) Add(user *core.User, requestBody core.Tag) error {
 		l.Debug("unable to get event from db", slog.String("err", err.Error()))
 		return errors.NewNotFoundError("event not found")
 	}
-	if initialEvent.UserEmail != user.Email {
-		l.Debug("user emails not match", slog.String("userEmail", user.Email), slog.String("eventEmail", initialEvent.UserEmail))
+	if initialEvent.UserEmail != ctx.User.Email {
+		l.Debug("user emails not match", slog.String("userEmail", ctx.User.Email), slog.String("eventEmail", initialEvent.UserEmail))
 		return errors.NewAuthError("wrong user")
 	}
 

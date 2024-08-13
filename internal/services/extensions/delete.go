@@ -1,6 +1,7 @@
 package extensions
 
 import (
+	"calendar-api/internal/context"
 	"calendar-api/internal/core"
 	"calendar-api/internal/errors"
 	"log/slog"
@@ -14,18 +15,18 @@ type Deleter interface {
 	DeleteExtension(email string, extensionID uint) error
 }
 
-func (s *Service) Delete(user *core.User, requestBody DeleteRequestBody) error {
+func (s *Service) Delete(ctx *context.Context, requestBody DeleteRequestBody) error {
 	l := s.l.With(
 		slog.String("op", "services.extensions.Delete"),
 	)
 
-	if !hasUserExtension(user, requestBody.ExtensionID) {
+	if !hasUserExtension(ctx.User, requestBody.ExtensionID) {
 		l.Debug("validation error: user has no such extension")
 		return errors.NewValidationError("user has no such extension")
 	}
 
 	l.Info("deleting ExtensionData from db")
-	err := s.storage.DeleteExtension(user.Email, requestBody.ExtensionID)
+	err := s.storage.DeleteExtension(ctx.User.Email, requestBody.ExtensionID)
 	if err != nil {
 		l.Error("unable to delete ExtensionData from db", slog.String("err", err.Error()))
 		return errors.NewInternalError("unable to delete extension data from db")

@@ -1,6 +1,7 @@
 package events
 
 import (
+	"calendar-api/internal/context"
 	"calendar-api/internal/core"
 	"calendar-api/internal/errors"
 	"log/slog"
@@ -11,7 +12,7 @@ type Updater interface {
 	UpdateEvent(event *core.Event) error
 }
 
-func (s *Service) Update(user *core.User, requestBody core.Event) error {
+func (s *Service) Update(ctx *context.Context, requestBody core.Event) error {
 	l := s.l.With(
 		slog.String("op", "services.events.Update"),
 	)
@@ -31,7 +32,7 @@ func (s *Service) Update(user *core.User, requestBody core.Event) error {
 		l.Debug("event does not exist")
 		return errors.NewNotFoundError("event not found")
 	}
-	if initialEvent.UserEmail != user.Email {
+	if initialEvent.UserEmail != ctx.User.Email {
 		l.Debug("user email does not match")
 		return errors.NewAuthError("wrong user")
 	}
