@@ -2,6 +2,7 @@ package main
 
 import (
 	"calendar-api/internal/config"
+	pkgextensions "calendar-api/internal/extensions"
 	"calendar-api/internal/extensions/khnure"
 	"calendar-api/internal/extensions/mapper"
 	"calendar-api/internal/handlers"
@@ -59,7 +60,7 @@ func main() {
 
 func NewRouter(logger *slog.Logger,
 	storage storage.Storage,
-	extensionMapper *mapper.ExtensionMapper,
+	extensionMapper pkgextensions.Getter,
 	authMiddleware Middleware,
 ) http.Handler {
 	cfg := handlers.NewConfiguration(logger, storage, extensionMapper)
