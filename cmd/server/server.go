@@ -1,9 +1,14 @@
 package main
 
-import "calendar-api/internal/app/server"
+import (
+	"calendar-api/internal/app/server"
+	"calendar-api/internal/config"
+)
 
 func main() {
-	app := server.NewApp()
+	cfg := config.MustNewConfig()
+
+	app := server.NewApp(cfg)
 
 	app.Run()
 }

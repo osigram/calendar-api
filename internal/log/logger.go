@@ -1,20 +1,19 @@
-package server
+package log
 
 import (
 	"calendar-api/internal/config"
-	"calendar-api/internal/log"
 	"io"
 	"log/slog"
 	"os"
 )
 
-func mustNewLogger(cfg *config.Config, w io.Writer) *slog.Logger {
+func MustNewLogger(cfg *config.Config, w io.Writer) *slog.Logger {
 	var logger *slog.Logger
 	switch cfg.BuildMode {
 	case config.Prod:
-		logger = log.MustNewProdLogger(w)
+		logger = MustNewProdLogger(w)
 	case config.Dev:
-		logger = log.MustNewDevLogger(w)
+		logger = MustNewDevLogger(w)
 	default:
 		panic("Error to initialize logger in main")
 	}
@@ -22,7 +21,7 @@ func mustNewLogger(cfg *config.Config, w io.Writer) *slog.Logger {
 	return logger
 }
 
-func mustNewLogWriter(enableConsoleLogging bool, filepath string) (logWriter io.WriteCloser) {
+func MustNewLogWriter(enableConsoleLogging bool, filepath string) (logWriter io.WriteCloser) {
 	if enableConsoleLogging {
 		logWriter = os.Stdout
 	} else {

@@ -5,8 +5,8 @@ import (
 	"calendar-api/internal/extensions"
 	"calendar-api/internal/extensions/khnure"
 	"calendar-api/internal/extensions/mapper"
+	"calendar-api/internal/log"
 	"calendar-api/internal/middlewares/authmock"
-	"calendar-api/internal/router"
 	"calendar-api/internal/storage"
 	"calendar-api/internal/storage/gormstorage"
 	"fmt"
@@ -19,22 +19,34 @@ import (
 	"syscall"
 )
 
+type Middleware = func(http.Handler) http.Handler
+
 type App struct {
 	L                *slog.Logger
 	Storage          storage.Storage
 	ExtensionsMapper extensions.Getter
-	Decoder          *schema.Decoder
-	router           http.Handler
+	decoder          *schema.Decoder
+	authMiddleware   Middleware
 	logWriter        io.WriteCloser
 	cfg              *config.Config
+}
+
+func (a *App) Logger() *slog.Logger {
+	return a.L
+}
+
+func (a *App) Decoder() *schema.Decoder {
+	return a.decoder
 }
 
 func (a *App) Run() {
 	defer a.logWriter.Close()
 
+	r := NewRouter(a)
+
 	go func() {
 		a.L.Info("Starting server...", slog.String("url", a.cfg.URL))
-		if err := http.ListenAndServe(a.cfg.URL, a.router); err != nil {
+		if err := http.ListenAndServe(a.cfg.URL, r); err != nil {
 			a.L.Error(fmt.Sprint(err))
 		}
 	}()
@@ -45,14 +57,12 @@ func (a *App) Run() {
 	<-exit
 }
 
-func NewApp() *App {
-	cfg := config.MustNewConfig()
-
-	logWriter := mustNewLogWriter(cfg.EnableConsoleLogging, cfg.LogFilePath) // must be closed
-	logger := mustNewLogger(cfg, io.Writer(logWriter))
+func NewApp(cfg *config.Config) *App {
+	logWriter := log.MustNewLogWriter(cfg.EnableConsoleLogging, cfg.LogFilePath) // must be closed
+	logger := log.MustNewLogger(cfg, logWriter)
 	logger.Info("Starting application...")
 
-	storage, err := gormstorage.NewStorage(cfg.ConnectionString)
+	s, err := gormstorage.NewStorage(cfg.ConnectionString)
 	if err != nil {
 		panic(err)
 	}
@@ -60,9 +70,7 @@ func NewApp() *App {
 	extensionsMapper := mapper.NewExtensionMapper()
 	extensionsMapper.RegisterExtension(1, khnure.NewTimeTableExtension())
 
-	authMiddleware := authmock.MockAuthMiddleware(logger, cfg, storage)
-
-	r := router.NewRouter(logger, storage, extensionsMapper, authMiddleware)
+	authMiddleware := authmock.MockAuthMiddleware(logger, cfg, s)
 
 	// Query params decoder
 	decoder := schema.NewDecoder()
@@ -71,10 +79,11 @@ func NewApp() *App {
 
 	return &App{
 		L:                logger,
-		Storage:          storage,
+		Storage:          s,
 		ExtensionsMapper: extensionsMapper,
-		Decoder:          decoder,
-		router:           r,
+		decoder:          decoder,
+		authMiddleware:   authMiddleware,
 		logWriter:        logWriter,
+		cfg:              cfg,
 	}
 }
