@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"calendar-api/internal/app/server"
 	"calendar-api/internal/context"
 	"calendar-api/internal/core"
 	"calendar-api/internal/helpers"
@@ -12,9 +13,9 @@ import (
 
 type serviceFunc[T any] func(*context.Context, T) error
 
-func Post[T any](cfg *Configuration, service serviceFunc[T]) http.HandlerFunc {
+func Post[T any](app *server.App, service serviceFunc[T]) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		l := cfg.L.With(
+		l := app.L.With(
 			slog.String("op", "internal.handlers.PostWithResponse"),
 			slog.String("requestId", middleware.GetReqID(r.Context())),
 		)

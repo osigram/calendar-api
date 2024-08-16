@@ -30,7 +30,7 @@ type Config struct {
 	LogFilePath          string `config:"logFilePath"`
 }
 
-func NewConfig() Config {
+func MustNewConfig() *Config {
 	c := config.NewWithOptions("main", config.ParseEnv)
 	c.WithOptions(func(opt *config.Options) {
 		opt.DecoderConfig.TagName = "config"
@@ -60,5 +60,5 @@ func NewConfig() Config {
 		panic("unable to load configs to struct")
 	}
 
-	return configStruct
+	return &configStruct
 }

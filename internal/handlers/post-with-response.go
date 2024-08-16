@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"calendar-api/internal/app/server"
 	"calendar-api/internal/context"
 	"calendar-api/internal/core"
 	"calendar-api/internal/helpers"
@@ -10,9 +11,9 @@ import (
 	"net/http"
 )
 
-func PostWithResponse[T any, V any](cfg *Configuration, service serviceWithResponseFunc[T, V], authorizedOnly bool) http.HandlerFunc {
+func PostWithResponse[T any, V any](app *server.App, service serviceWithResponseFunc[T, V], authorizedOnly bool) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		l := cfg.L.With(
+		l := app.L.With(
 			slog.String("op", "internal.handlers.PostWithResponse"),
 			slog.String("requestId", middleware.GetReqID(r.Context())),
 		)

@@ -2,7 +2,7 @@ package context
 
 import (
 	"calendar-api/internal/core"
-	"golang.org/x/net/context"
+	"context"
 )
 
 type Context struct {

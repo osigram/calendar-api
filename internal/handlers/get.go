@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"calendar-api/internal/app/server"
 	"calendar-api/internal/context"
 	"calendar-api/internal/core"
 	"calendar-api/internal/helpers"
@@ -12,15 +13,15 @@ import (
 
 type serviceWithResponseFunc[T any, V any] func(*context.Context, T) (V, error)
 
-func Get[T any, V any](cfg *Configuration, service serviceWithResponseFunc[T, V]) http.HandlerFunc {
+func Get[T any, V any](app *server.App, service serviceWithResponseFunc[T, V]) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		l := cfg.L.With(
+		l := app.L.With(
 			slog.String("op", "internal.handlers.Get"),
 			slog.String("requestId", middleware.GetReqID(r.Context())),
 		)
 
 		var requestBody T
-		err := cfg.decoder.Decode(&requestBody, r.URL.Query())
+		err := app.Decoder.Decode(&requestBody, r.URL.Query())
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			l.Debug("unable to decode request body", slog.String("err", err.Error()))
