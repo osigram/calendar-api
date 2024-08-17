@@ -25,7 +25,7 @@ func (s *Service) Google(ctx *context.Context, loginData LoginData) (Response, e
 	}
 
 	l.Debug("processing claims")
-	claimsUser, err := core.NewUserFromGoogleClaims(payload.Claims)
+	claimsUser, err := core.NewUserFromClaims(payload.Claims)
 	if err != nil {
 		l.Error("unable to parse claims from Google", slog.String("err", err.Error()))
 		return Response{}, errors.NewInternalError("internal auth error")

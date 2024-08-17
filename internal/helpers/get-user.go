@@ -3,14 +3,19 @@ package helpers
 import (
 	"calendar-api/internal/core"
 	"context"
-	"errors"
+	"github.com/go-chi/jwtauth/v5"
 )
 
 func GetUser(ctx context.Context) (*core.User, error) {
-	userAny := ctx.Value("user")
-	if user, ok := userAny.(*core.User); ok {
-		return user, nil
+	_, claims, err := jwtauth.FromContext(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, errors.New("cannot get user from context")
+	user, err := core.NewUserFromClaims(claims)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }

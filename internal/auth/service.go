@@ -28,12 +28,12 @@ type Service struct {
 	googleClientID   string
 }
 
-func New(logger *slog.Logger, storage Storage, auth *jwtauth.JWTAuth, googleClientID string) *Service {
+func New(logger *slog.Logger, storage Storage, accessTokenAuth, refreshTokenAuth *jwtauth.JWTAuth, googleClientID string) *Service {
 	return &Service{
 		l:                logger,
 		storage:          storage,
-		accessTokenAuth:  auth,
-		refreshTokenAuth: auth,
+		accessTokenAuth:  accessTokenAuth,
+		refreshTokenAuth: refreshTokenAuth,
 		googleClientID:   googleClientID,
 	}
 }

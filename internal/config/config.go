@@ -21,13 +21,15 @@ var secrets = map[string]string{
 }
 
 type Config struct {
-	BuildMode            string `config:"buildMode" default:"dev"`
-	URL                  string `config:"url"`
-	ConnectionString     string `config:"connectionString"`
-	GoogleClientId       string `config:"googleClientId"`
-	AuthSecret           string `config:"authSecret"`
-	EnableConsoleLogging bool   `config:"enableConsoleLogging"`
-	LogFilePath          string `config:"logFilePath"`
+	BuildMode               string `config:"buildMode" default:"dev"`
+	URL                     string `config:"url"`
+	ConnectionString        string `config:"connectionString"`
+	GoogleClientId          string `config:"googleClientId"`
+	AuthSecret              string `config:"authSecret"`
+	AccessTokenExpInMinutes int    `config:"accessTokenExpInMinutes"`
+	RefreshTokenExpInDays   int    `config:"refreshTokenExpInDays"`
+	EnableConsoleLogging    bool   `config:"enableConsoleLogging"`
+	LogFilePath             string `config:"logFilePath"`
 }
 
 func MustNewConfig() *Config {

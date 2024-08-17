@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"calendar-api/internal/middlewares"
+	"calendar-api/internal/auth"
 	"calendar-api/internal/services/events"
 	"calendar-api/internal/services/extensions"
 	"calendar-api/internal/services/tags"
@@ -16,7 +16,7 @@ type EventRepository interface {
 }
 
 type UserRepository interface {
-	middlewares.UserGetSetter
+	auth.Storage
 }
 
 type TagRepository interface {

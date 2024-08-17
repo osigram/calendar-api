@@ -17,7 +17,7 @@ func (u *User) GetClaims() map[string]interface{} {
 	}
 }
 
-func NewUserFromGoogleClaims(claims map[string]interface{}) (user User, err error) {
+func NewUserFromClaims(claims map[string]interface{}) (user User, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = r.(error)

@@ -6,17 +6,19 @@ import (
 	"calendar-api/internal/extensions/khnure"
 	"calendar-api/internal/extensions/mapper"
 	"calendar-api/internal/log"
-	"calendar-api/internal/middlewares/authmock"
 	"calendar-api/internal/storage"
 	"calendar-api/internal/storage/gormstorage"
 	"fmt"
+	"github.com/go-chi/jwtauth/v5"
 	"github.com/gorilla/schema"
+	"github.com/lestrrat-go/jwx/v2/jwt"
 	"io"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 type Middleware = func(http.Handler) http.Handler
@@ -26,7 +28,8 @@ type App struct {
 	Storage          storage.Storage
 	ExtensionsMapper extensions.Getter
 	decoder          *schema.Decoder
-	authMiddleware   Middleware
+	accessTokenAuth  *jwtauth.JWTAuth
+	refreshTokenAuth *jwtauth.JWTAuth
 	logWriter        io.WriteCloser
 	cfg              *config.Config
 }
@@ -70,7 +73,8 @@ func NewApp(cfg *config.Config) *App {
 	extensionsMapper := mapper.NewExtensionMapper()
 	extensionsMapper.RegisterExtension(1, khnure.NewTimeTableExtension())
 
-	authMiddleware := authmock.MockAuthMiddleware(logger, cfg, s)
+	accessTokenAuth := jwtauth.New("HS512", []byte(cfg.AuthSecret), nil, jwt.WithAcceptableSkew(time.Duration(cfg.AccessTokenExpInMinutes)*time.Minute))
+	refreshTokenAuth := jwtauth.New("HS512", []byte(cfg.AuthSecret), nil, jwt.WithAcceptableSkew(time.Duration(cfg.RefreshTokenExpInDays)*24*time.Hour))
 
 	// Query params decoder
 	decoder := schema.NewDecoder()
@@ -82,7 +86,8 @@ func NewApp(cfg *config.Config) *App {
 		Storage:          s,
 		ExtensionsMapper: extensionsMapper,
 		decoder:          decoder,
-		authMiddleware:   authMiddleware,
+		accessTokenAuth:  accessTokenAuth,
+		refreshTokenAuth: refreshTokenAuth,
 		logWriter:        logWriter,
 		cfg:              cfg,
 	}
