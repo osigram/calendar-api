@@ -35,8 +35,9 @@ func Post[T any](app App, service serviceFunc[T]) http.HandlerFunc {
 		}
 
 		ctx := &context.Context{
-			Context: r.Context(),
-			User:    user,
+			Context:   r.Context(),
+			User:      user,
+			UserAgent: r.UserAgent(),
 		}
 
 		err = service(ctx, requestBody)

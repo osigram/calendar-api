@@ -7,5 +7,6 @@ import (
 
 type Context struct {
 	context.Context
-	User *core.User
+	User      *core.User
+	UserAgent string
 }

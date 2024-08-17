@@ -36,8 +36,9 @@ func PostWithResponse[T any, V any](app App, service serviceWithResponseFunc[T, 
 		}
 
 		ctx := &context.Context{
-			Context: r.Context(),
-			User:    user,
+			Context:   r.Context(),
+			User:      user,
+			UserAgent: r.UserAgent(),
 		}
 
 		result, err := service(ctx, requestBody)

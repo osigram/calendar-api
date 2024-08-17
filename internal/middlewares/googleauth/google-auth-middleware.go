@@ -109,7 +109,7 @@ func RegisterUser(userGetSetter middlewares.UserGetSetter, claims map[string]any
 	user := core.User{
 		Email:          email,
 		Name:           name,
-		PicturePath:    picturePath,
+		Picture:        picturePath,
 		ExtensionsData: nil,
 	}
 

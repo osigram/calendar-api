@@ -10,7 +10,7 @@ import (
 	"net/http"
 )
 
-func MockAuthMiddleware(logger *slog.Logger, cfg config.Config, userGetSetter middlewares.UserGetSetter) func(next http.Handler) http.Handler {
+func MockAuthMiddleware(logger *slog.Logger, cfg *config.Config, userGetSetter middlewares.UserGetSetter) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			l := logger.With(
@@ -26,7 +26,7 @@ func MockAuthMiddleware(logger *slog.Logger, cfg config.Config, userGetSetter mi
 				user = &core.User{
 					Email:          "user@example.com",
 					Name:           "Example",
-					PicturePath:    "https://instagram.com/favicon.ico",
+					Picture:        "https://instagram.com/favicon.ico",
 					ExtensionsData: nil,
 				}
 				err = userGetSetter.AddUser(user)
