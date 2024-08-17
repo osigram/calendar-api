@@ -18,6 +18,10 @@ type ByDateGetter interface {
 	GetEventsByDate(*core.User, time.Time, time.Time) ([]core.Event, error)
 }
 
+type UserGetter interface {
+	GetUser(string) (*core.User, error)
+}
+
 type ExtensionGetter interface {
 	Get(id uint) (extensions.Extension, error)
 }
@@ -40,9 +44,13 @@ func (s *Service) GetByDate(ctx *context.Context, requestBody GetEventByDateRequ
 		return nil, errors.NewInternalError("unable to get events from db")
 	}
 
+	user, err := s.storage.GetUser(ctx.User.Email)
+	if err != nil {
+		l.Error("failed to get user from db", slog.String("err", err.Error()))
+		return nil, errors.NewInternalError("unable to get user from db")
+	}
 	l.Debug("getting events from extensions")
-	// TODO: get extensions by user
-	for _, extensionData := range ctx.User.ExtensionsData { // this is a wrong way to get ExtensionsData, but it's a bug, not a refactoring problem
+	for _, extensionData := range user.ExtensionsData {
 		extension, err := s.extensionsGetter.Get(extensionData.Extension)
 		if err != nil {
 			l.Error("Extension is not implemented", slog.Uint64("extensionID", uint64(extensionData.ID)), slog.String("err", err.Error()))

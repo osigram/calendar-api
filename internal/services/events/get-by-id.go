@@ -12,6 +12,10 @@ type GetEventByIDRequest struct {
 	Source uint `schema:"source,omitempty"`
 }
 
+type ExtensionDataGetter interface {
+	GetExtensionData(userEmail string, extensionID uint) (*core.ExtensionData, error)
+}
+
 type ByIDGetter interface {
 	GetEventByID(uint) (*core.Event, error)
 }
@@ -31,7 +35,8 @@ func (s *Service) GetByID(ctx *context.Context, requestBody GetEventByIDRequest)
 	case 0:
 		eventGetter = s.storage
 	default:
-		if !hasUserExtension(ctx.User, requestBody.Source) {
+		_, err := s.storage.GetExtensionData(ctx.User.Email, requestBody.Source)
+		if err != nil {
 			l.Debug("validation error: source is invalid")
 			return core.Event{}, errors.NewValidationError("source is invalid")
 		}
@@ -58,14 +63,4 @@ func (s *Service) GetByID(ctx *context.Context, requestBody GetEventByIDRequest)
 	}
 
 	return *event, nil
-}
-
-func hasUserExtension(user *core.User, id uint) bool {
-	for _, ed := range user.ExtensionsData {
-		if id == ed.ID {
-			return true
-		}
-	}
-
-	return false
 }

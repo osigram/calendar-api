@@ -11,6 +11,8 @@ type Storage interface {
 	ByDateGetter
 	ByIDGetter
 	Updater
+	UserGetter
+	ExtensionDataGetter
 }
 
 type Service struct {

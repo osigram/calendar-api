@@ -8,6 +8,7 @@ import (
 type Storage interface {
 	Installer
 	Deleter
+	Getter
 }
 
 type Service struct {

@@ -37,3 +37,12 @@ func (gs *GormStorage) DeleteExtension(email string, extensionID uint) error {
 
 	return result.Error
 }
+
+func (gs *GormStorage) GetExtensionData(email string, extensionID uint) (*core.ExtensionData, error) {
+	db := gs.db
+
+	var extensionData core.ExtensionData
+	result := db.Where(&core.ExtensionData{Extension: extensionID, UserEmail: email}).First(&extensionData)
+
+	return &extensionData, result.Error
+}

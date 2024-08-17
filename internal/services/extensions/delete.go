@@ -11,6 +11,10 @@ type DeleteRequestBody struct {
 	ExtensionID uint `json:"extensionID"`
 }
 
+type Getter interface {
+	GetExtensionData(userEmail string, extensionID uint) (*core.ExtensionData, error)
+}
+
 type Deleter interface {
 	DeleteExtension(email string, extensionID uint) error
 }
@@ -20,7 +24,12 @@ func (s *Service) Delete(ctx *context.Context, requestBody DeleteRequestBody) er
 		slog.String("op", "services.extensions.Delete"),
 	)
 
-	if !hasUserExtension(ctx.User, requestBody.ExtensionID) {
+	if requestBody.ExtensionID == 0 {
+		l.Debug("validation error: extensionID is zero", slog.Uint64("extensionID", uint64(requestBody.ExtensionID)))
+		return errors.NewValidationError("extensionID is zero")
+	}
+
+	if _, err := s.storage.GetExtensionData(ctx.User.Email, requestBody.ExtensionID); err != nil {
 		l.Debug("validation error: user has no such extension")
 		return errors.NewValidationError("user has no such extension")
 	}
@@ -33,15 +42,4 @@ func (s *Service) Delete(ctx *context.Context, requestBody DeleteRequestBody) er
 	}
 
 	return nil
-}
-
-// TODO: this is a wrong way to get extensionsData, because of the auth logic. Later, should be rewritten and moved to helpers
-func hasUserExtension(user *core.User, extensionID uint) bool {
-	for _, extensionData := range user.ExtensionsData {
-		if extensionData.Extension == extensionID {
-			return true
-		}
-	}
-
-	return false
 }
