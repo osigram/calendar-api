@@ -21,8 +21,6 @@ import (
 	"time"
 )
 
-type Middleware = func(http.Handler) http.Handler
-
 type App struct {
 	L                *slog.Logger
 	Storage          storage.Storage
