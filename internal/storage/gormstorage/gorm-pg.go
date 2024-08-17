@@ -16,6 +16,7 @@ func NewStorage(connectionString string) (*GormStorage, error) {
 	err = initTable(db, &core.Event{}, err)
 	err = initTable(db, &core.Tag{}, err)
 	err = initTable(db, &core.ExtensionData{}, err)
+	err = initTable(db, &core.Session{}, err)
 
 	return &GormStorage{db}, err
 }

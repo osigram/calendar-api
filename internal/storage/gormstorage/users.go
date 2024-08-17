@@ -9,7 +9,7 @@ func (gs *GormStorage) GetUser(email string) (*core.User, error) {
 	db := gs.db
 
 	var user core.User
-	result := db.Preload("ExtensionsData").First(&user, "email = ?", email)
+	result := db.Preload("ExtensionsData").Preload("Sessions").First(&user, "email = ?", email)
 
 	return &user, result.Error
 }

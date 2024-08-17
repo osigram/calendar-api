@@ -1,8 +1,8 @@
 package core
 
 type Session struct {
-	ID           uint   `json:"id"`
-	UserEmail    string `json:"userEmail"`
+	ID           uint   `json:"id" gorm:"primaryKey;autoIncrement"`
+	UserEmail    string `json:"userEmail" gorm:"references:Email;foreignKey:UserEmail;constraint:OnDelete:CASCADE;"`
 	RefreshToken string `json:"-"`
 	DeviceData   string `json:"deviceData"`
 }
