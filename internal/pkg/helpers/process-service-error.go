@@ -2,7 +2,7 @@ package helpers
 
 import (
 	"calendar-api/internal/core"
-	internalerrors "calendar-api/internal/errors"
+	internalerrors "calendar-api/internal/pkg/errors"
 	"errors"
 	"github.com/go-chi/render"
 	"net/http"

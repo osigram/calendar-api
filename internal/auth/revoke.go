@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"calendar-api/internal/context"
+	"calendar-api/internal/pkg/context"
 	"errors"
 	"log/slog"
 )

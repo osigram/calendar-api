@@ -1,9 +1,9 @@
 package tags
 
 import (
-	"calendar-api/internal/context"
 	"calendar-api/internal/core"
-	"calendar-api/internal/errors"
+	"calendar-api/internal/pkg/context"
+	"calendar-api/internal/pkg/errors"
 	"calendar-api/internal/services/events"
 	"log/slog"
 )

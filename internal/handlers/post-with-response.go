@@ -1,9 +1,9 @@
 package handlers
 
 import (
-	"calendar-api/internal/context"
 	"calendar-api/internal/core"
-	"calendar-api/internal/helpers"
+	"calendar-api/internal/pkg/context"
+	helpers2 "calendar-api/internal/pkg/helpers"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
 	"log/slog"
@@ -27,7 +27,7 @@ func PostWithResponse[T any, V any](app App, service serviceWithResponseFunc[T, 
 
 		var user *core.User
 		if authorizedOnly {
-			user, err = helpers.GetUser(r.Context())
+			user, err = helpers2.GetUser(r.Context())
 			if err != nil {
 				w.WriteHeader(http.StatusUnauthorized)
 				l.Debug(err.Error())
@@ -43,7 +43,7 @@ func PostWithResponse[T any, V any](app App, service serviceWithResponseFunc[T, 
 
 		result, err := service(ctx, requestBody)
 		if err != nil {
-			helpers.ProcessServiceError(w, r, err)
+			helpers2.ProcessServiceError(w, r, err)
 			return
 		}
 

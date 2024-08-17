@@ -1,9 +1,9 @@
 package handlers
 
 import (
-	"calendar-api/internal/context"
 	"calendar-api/internal/core"
-	"calendar-api/internal/helpers"
+	"calendar-api/internal/pkg/context"
+	helpers2 "calendar-api/internal/pkg/helpers"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
 	"log/slog"
@@ -27,7 +27,7 @@ func Get[T any, V any](app App, service serviceWithResponseFunc[T, V]) http.Hand
 			return
 		}
 
-		user, err := helpers.GetUser(r.Context())
+		user, err := helpers2.GetUser(r.Context())
 		if err != nil {
 			w.WriteHeader(http.StatusUnauthorized)
 			l.Debug(err.Error())
@@ -42,7 +42,7 @@ func Get[T any, V any](app App, service serviceWithResponseFunc[T, V]) http.Hand
 
 		result, err := service(ctx, requestBody)
 		if err != nil {
-			statusCode, message := helpers.ProcessServiceError(w, r, err)
+			statusCode, message := helpers2.ProcessServiceError(w, r, err)
 			l.Debug("service returned an error", slog.Int("statusCode", statusCode), slog.String("message", message))
 			return
 		}

@@ -1,9 +1,9 @@
 package auth
 
 import (
-	"calendar-api/internal/context"
 	"calendar-api/internal/core"
-	"calendar-api/internal/errors"
+	"calendar-api/internal/pkg/context"
+	"calendar-api/internal/pkg/errors"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/google/uuid"
 	"log/slog"
