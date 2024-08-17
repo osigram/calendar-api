@@ -1,7 +1,7 @@
 package mapper
 
 import (
-	"calendar-api/internal/extensions"
+	"calendar-api/pkg/extensions"
 	"errors"
 )
 

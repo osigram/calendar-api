@@ -1,7 +1,7 @@
 package events
 
 import (
-	"calendar-api/internal/extensions"
+	"calendar-api/pkg/extensions"
 	"log/slog"
 )
 

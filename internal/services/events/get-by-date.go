@@ -2,9 +2,9 @@ package events
 
 import (
 	"calendar-api/internal/core"
-	"calendar-api/internal/extensions"
 	"calendar-api/internal/pkg/context"
 	"calendar-api/internal/pkg/errors"
+	"calendar-api/pkg/extensions"
 	"log/slog"
 	"time"
 )

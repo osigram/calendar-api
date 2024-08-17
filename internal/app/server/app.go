@@ -2,12 +2,12 @@ package server
 
 import (
 	"calendar-api/internal/config"
-	"calendar-api/internal/extensions"
 	"calendar-api/internal/extensions/khnure"
 	"calendar-api/internal/extensions/mapper"
 	"calendar-api/internal/log"
 	"calendar-api/internal/storage"
 	"calendar-api/internal/storage/gormstorage"
+	"calendar-api/pkg/extensions"
 	"fmt"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/gorilla/schema"
