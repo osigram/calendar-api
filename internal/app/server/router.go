@@ -15,9 +15,9 @@ import (
 
 func NewRouter(app *App) http.Handler {
 	var (
-		logger          = app.L
-		storage         = app.Storage
-		extensionMapper = app.ExtensionsMapper
+		logger          = app.logger
+		storage         = app.storage
+		extensionMapper = app.extensionsMapper
 		r               = chi.NewRouter()
 	)
 

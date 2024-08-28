@@ -8,12 +8,14 @@ import (
 	"calendar-api/internal/storage"
 	"calendar-api/internal/storage/gormstorage"
 	"calendar-api/pkg/extensions"
-	"fmt"
+	"context"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/gorilla/schema"
 	"github.com/lestrrat-go/jwx/v2/jwt"
+	"golang.org/x/sync/errgroup"
 	"io"
 	"log/slog"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -22,9 +24,9 @@ import (
 )
 
 type App struct {
-	L                *slog.Logger
-	Storage          storage.Storage
-	ExtensionsMapper extensions.Getter
+	logger           *slog.Logger
+	storage          storage.Storage
+	extensionsMapper extensions.Getter
 	decoder          *schema.Decoder
 	accessTokenAuth  *jwtauth.JWTAuth
 	refreshTokenAuth *jwtauth.JWTAuth
@@ -33,7 +35,7 @@ type App struct {
 }
 
 func (a *App) Logger() *slog.Logger {
-	return a.L
+	return a.logger
 }
 
 func (a *App) Decoder() *schema.Decoder {
@@ -45,23 +47,40 @@ func (a *App) Run() {
 
 	r := NewRouter(a)
 
-	go func() {
-		a.L.Info("Starting server...", slog.String("url", a.cfg.URL))
-		if err := http.ListenAndServe(a.cfg.URL, r); err != nil {
-			a.L.Error(fmt.Sprint(err))
-		}
-	}()
+	// Graceful shutdown context
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
 
-	// Graceful shutdown
-	exit := make(chan os.Signal, 1)
-	signal.Notify(exit, os.Interrupt, syscall.SIGTERM)
-	<-exit
+	// Init server
+	server := &http.Server{
+		Addr:    a.cfg.URL,
+		Handler: r,
+		BaseContext: func(_ net.Listener) context.Context {
+			return ctx
+		},
+	}
+
+	a.logger.Info("running server", slog.String("url", a.cfg.URL))
+	g, gCtx := errgroup.WithContext(ctx)
+	g.Go(func() error {
+		return server.ListenAndServe()
+	})
+
+	g.Go(func() error {
+		<-gCtx.Done()
+		return server.Shutdown(context.Background())
+	})
+
+	if err := g.Wait(); err != nil {
+		a.logger.Error("server shutdown", slog.String("err", err.Error()))
+	}
 }
 
 func NewApp(cfg *config.Config) *App {
 	logWriter := log.MustNewLogWriter(cfg.EnableConsoleLogging, cfg.LogFilePath) // must be closed
 	logger := log.MustNewLogger(cfg, logWriter)
-	logger.Info("Starting application...")
+
+	logger.Info("starting application")
 
 	s, err := gormstorage.NewStorage(cfg.ConnectionString)
 	if err != nil {
@@ -80,9 +99,9 @@ func NewApp(cfg *config.Config) *App {
 	decoder.ZeroEmpty(true)
 
 	return &App{
-		L:                logger,
-		Storage:          s,
-		ExtensionsMapper: extensionsMapper,
+		logger:           logger,
+		storage:          s,
+		extensionsMapper: extensionsMapper,
 		decoder:          decoder,
 		accessTokenAuth:  accessTokenAuth,
 		refreshTokenAuth: refreshTokenAuth,
