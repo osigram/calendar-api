@@ -2,7 +2,6 @@ package server
 
 import (
 	"calendar-api/internal/config"
-	"calendar-api/internal/extensions/khnure"
 	"calendar-api/internal/extensions/mapper"
 	"calendar-api/internal/log"
 	"calendar-api/internal/storage"
@@ -15,7 +14,6 @@ import (
 	"golang.org/x/sync/errgroup"
 	"io"
 	"log/slog"
-	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -55,9 +53,6 @@ func (a *App) Run() {
 	server := &http.Server{
 		Addr:    a.cfg.URL,
 		Handler: r,
-		BaseContext: func(_ net.Listener) context.Context {
-			return ctx
-		},
 	}
 
 	a.logger.Info("running server", slog.String("url", a.cfg.URL))
@@ -88,7 +83,7 @@ func NewApp(cfg *config.Config) *App {
 	}
 
 	extensionsMapper := mapper.NewExtensionMapper()
-	extensionsMapper.RegisterExtension(1, khnure.NewTimeTableExtension())
+	//extensionsMapper.RegisterExtension(1, khnure.NewTimeTableExtension())
 
 	accessTokenAuth := jwtauth.New("HS512", []byte(cfg.AuthSecret), nil, jwt.WithAcceptableSkew(time.Duration(cfg.AccessTokenExpInMinutes)*time.Minute))
 	refreshTokenAuth := jwtauth.New("HS512", []byte(cfg.AuthSecret), nil, jwt.WithAcceptableSkew(time.Duration(cfg.RefreshTokenExpInDays)*24*time.Hour))

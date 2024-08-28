@@ -2,17 +2,18 @@ package events
 
 import (
 	"calendar-api/internal/core"
-	"calendar-api/internal/pkg/context"
+	pkgcontext "calendar-api/internal/pkg/context"
 	"calendar-api/internal/pkg/errors"
+	"context"
 	"log/slog"
 )
 
 type Updater interface {
 	ByIDGetter
-	UpdateEvent(event *core.Event) error
+	UpdateEvent(ctx context.Context, event *core.Event) error
 }
 
-func (s *Service) Update(ctx *context.Context, requestBody core.Event) error {
+func (s *Service) Update(ctx *pkgcontext.Context, requestBody core.Event) error {
 	l := s.l.With(
 		slog.String("op", "services.events.Update"),
 	)
@@ -27,7 +28,7 @@ func (s *Service) Update(ctx *context.Context, requestBody core.Event) error {
 		return errors.NewValidationError(err.Error())
 	}
 
-	initialEvent, err := s.storage.GetEventByID(requestBody.ID)
+	initialEvent, err := s.storage.GetEventByID(ctx, requestBody.ID)
 	if err != nil {
 		l.Debug("event does not exist")
 		return errors.NewNotFoundError("event not found")
@@ -38,7 +39,7 @@ func (s *Service) Update(ctx *context.Context, requestBody core.Event) error {
 	}
 
 	l.Info("updating event in db")
-	err = s.storage.UpdateEvent(&requestBody)
+	err = s.storage.UpdateEvent(ctx, &requestBody)
 	if err != nil {
 		l.Error("unable to update event in db")
 		return errors.NewInternalError("unable to update event in db")

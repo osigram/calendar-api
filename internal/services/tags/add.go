@@ -2,18 +2,19 @@ package tags
 
 import (
 	"calendar-api/internal/core"
-	"calendar-api/internal/pkg/context"
+	pkgcontext "calendar-api/internal/pkg/context"
 	"calendar-api/internal/pkg/errors"
 	"calendar-api/internal/services/events"
+	"context"
 	"log/slog"
 )
 
 type Adder interface {
 	events.ByIDGetter
-	AddTag(string, uint) error
+	AddTag(context.Context, string, uint) error
 }
 
-func (s *Service) Add(ctx *context.Context, requestBody core.Tag) error {
+func (s *Service) Add(ctx *pkgcontext.Context, requestBody core.Tag) error {
 	l := s.l.With(
 		slog.String("op", "services.tags.Add"),
 	)
@@ -28,7 +29,7 @@ func (s *Service) Add(ctx *context.Context, requestBody core.Tag) error {
 		return errors.NewValidationError("request body is invalid: " + err.Error())
 	}
 
-	initialEvent, err := s.storage.GetEventByID(requestBody.EventID)
+	initialEvent, err := s.storage.GetEventByID(ctx, requestBody.EventID)
 	if err != nil {
 		l.Debug("unable to get event from db", slog.String("err", err.Error()))
 		return errors.NewNotFoundError("event not found")
@@ -39,7 +40,7 @@ func (s *Service) Add(ctx *context.Context, requestBody core.Tag) error {
 	}
 
 	l.Info("adding tag to db")
-	err = s.storage.AddTag(requestBody.TagText, requestBody.EventID)
+	err = s.storage.AddTag(ctx, requestBody.TagText, requestBody.EventID)
 	if err != nil {
 		l.Error("unable to add tag to db", slog.String("err", err.Error()))
 		return errors.NewInternalError("unable to add tag to db")

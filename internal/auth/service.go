@@ -2,6 +2,7 @@ package auth
 
 import (
 	"calendar-api/internal/core"
+	"context"
 	"github.com/go-chi/jwtauth/v5"
 	"log/slog"
 )
@@ -12,12 +13,12 @@ type Response struct {
 }
 
 type Storage interface {
-	GetUser(email string) (*core.User, error)
-	AddUser(user *core.User) error
-	AddSession(session *core.Session) error
-	UpdateUser(user *core.User) error
-	UpdateSession(session *core.Session) error
-	DeleteSession(sessionID uint) error
+	GetUser(ctx context.Context, email string) (*core.User, error)
+	AddUser(ctx context.Context, user *core.User) error
+	AddSession(ctx context.Context, session *core.Session) error
+	UpdateUser(ctx context.Context, user *core.User) error
+	UpdateSession(ctx context.Context, session *core.Session) error
+	DeleteSession(ctx context.Context, sessionID uint) error
 }
 
 type Service struct {

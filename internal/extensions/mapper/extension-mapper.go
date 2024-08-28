@@ -2,6 +2,7 @@ package mapper
 
 import (
 	"calendar-api/pkg/extensions"
+	"context"
 	"errors"
 )
 
@@ -17,10 +18,16 @@ func (em *ExtensionMapper) RegisterExtension(id uint, extension extensions.Exten
 	em.extensions[id] = extension
 }
 
-func (em *ExtensionMapper) Get(id uint) (extensions.Extension, error) {
-	if extension, ok := em.extensions[id]; ok {
-		return extension, nil
+func (em *ExtensionMapper) Get(ctx context.Context, id uint) (extensions.Extension, error) {
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
+		if extension, ok := em.extensions[id]; ok {
+			return extension, nil
+		}
+
+		return nil, errors.New("extension not found")
 	}
 
-	return nil, errors.New("extension not found")
 }

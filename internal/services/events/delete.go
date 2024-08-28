@@ -1,8 +1,9 @@
 package events
 
 import (
-	"calendar-api/internal/pkg/context"
+	pkgcontext "calendar-api/internal/pkg/context"
 	"calendar-api/internal/pkg/errors"
+	"context"
 	"log/slog"
 )
 
@@ -12,10 +13,10 @@ type DeleteEventRequest struct {
 
 type Deleter interface {
 	ByIDGetter
-	DeleteEvent(uint) error
+	DeleteEvent(context.Context, uint) error
 }
 
-func (s *Service) Delete(ctx *context.Context, requestBody DeleteEventRequest) error {
+func (s *Service) Delete(ctx *pkgcontext.Context, requestBody DeleteEventRequest) error {
 	l := s.l.With(
 		slog.String("op", "services.events.Delete"),
 	)
@@ -25,7 +26,7 @@ func (s *Service) Delete(ctx *context.Context, requestBody DeleteEventRequest) e
 		return errors.NewValidationError("id is zero")
 	}
 
-	initialEvent, err := s.storage.GetEventByID(requestBody.ID)
+	initialEvent, err := s.storage.GetEventByID(ctx, requestBody.ID)
 	if err != nil {
 		l.Debug("unable to get event from db")
 		return errors.NewNotFoundError("unable to get event from db")
@@ -36,7 +37,7 @@ func (s *Service) Delete(ctx *context.Context, requestBody DeleteEventRequest) e
 	}
 
 	l.Info("deleting event from db")
-	err = s.storage.DeleteEvent(requestBody.ID)
+	err = s.storage.DeleteEvent(ctx, requestBody.ID)
 	if err != nil {
 		l.Debug("unable to delete event from db")
 		return errors.NewNotFoundError("unable to delete event from db")

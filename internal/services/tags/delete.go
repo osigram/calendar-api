@@ -1,9 +1,10 @@
 package tags
 
 import (
-	"calendar-api/internal/pkg/context"
+	pkgcontext "calendar-api/internal/pkg/context"
 	"calendar-api/internal/pkg/errors"
 	"calendar-api/internal/services/events"
+	"context"
 	"log/slog"
 )
 
@@ -14,10 +15,10 @@ type DeleteRequestBody struct {
 
 type Deleter interface {
 	events.ByIDGetter
-	DeleteTag(uint) error
+	DeleteTag(context.Context, uint) error
 }
 
-func (s *Service) Delete(ctx *context.Context, requestBody DeleteRequestBody) error {
+func (s *Service) Delete(ctx *pkgcontext.Context, requestBody DeleteRequestBody) error {
 	l := s.l.With(
 		slog.String("op", "services.tags.Delete"),
 	)
@@ -27,7 +28,7 @@ func (s *Service) Delete(ctx *context.Context, requestBody DeleteRequestBody) er
 		return errors.NewValidationError("requestBodyID is zero or eventID is zero")
 	}
 
-	initialEvent, err := s.storage.GetEventByID(requestBody.EventID)
+	initialEvent, err := s.storage.GetEventByID(ctx, requestBody.EventID)
 	if err != nil {
 		l.Debug("unable to get event from db", slog.String("err", err.Error()))
 		return errors.NewNotFoundError("event not found")
@@ -51,7 +52,7 @@ func (s *Service) Delete(ctx *context.Context, requestBody DeleteRequestBody) er
 	}
 
 	l.Info("deleting tag from db")
-	err = s.storage.DeleteTag(requestBody.ID)
+	err = s.storage.DeleteTag(ctx, requestBody.ID)
 	if err != nil {
 		l.Error("unable to delete tag from db", slog.String("err", err.Error()))
 		return errors.NewInternalError("tag not found")

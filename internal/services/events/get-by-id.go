@@ -2,8 +2,9 @@ package events
 
 import (
 	"calendar-api/internal/core"
-	"calendar-api/internal/pkg/context"
+	pkgcontext "calendar-api/internal/pkg/context"
 	"calendar-api/internal/pkg/errors"
+	"context"
 	"log/slog"
 )
 
@@ -13,14 +14,14 @@ type GetEventByIDRequest struct {
 }
 
 type ExtensionDataGetter interface {
-	GetExtensionData(userEmail string, extensionID uint) (*core.ExtensionData, error)
+	GetExtensionData(ctx context.Context, userEmail string, extensionID uint) (*core.ExtensionData, error)
 }
 
 type ByIDGetter interface {
-	GetEventByID(uint) (*core.Event, error)
+	GetEventByID(context.Context, uint) (*core.Event, error)
 }
 
-func (s *Service) GetByID(ctx *context.Context, requestBody GetEventByIDRequest) (core.Event, error) {
+func (s *Service) GetByID(ctx *pkgcontext.Context, requestBody GetEventByIDRequest) (core.Event, error) {
 	l := s.l.With(
 		slog.String("op", "services.events.GetById"),
 	)
@@ -35,13 +36,13 @@ func (s *Service) GetByID(ctx *context.Context, requestBody GetEventByIDRequest)
 	case 0:
 		eventGetter = s.storage
 	default:
-		_, err := s.storage.GetExtensionData(ctx.User.Email, requestBody.Source)
+		_, err := s.storage.GetExtensionData(ctx, ctx.User.Email, requestBody.Source)
 		if err != nil {
 			l.Debug("validation error: source is invalid")
 			return core.Event{}, errors.NewValidationError("source is invalid")
 		}
 
-		extension, err := s.extensionsGetter.Get(requestBody.Source)
+		extension, err := s.extensionsGetter.Get(ctx, requestBody.Source)
 		if err != nil {
 			l.Error("extension is not implemented", slog.Uint64("extensionID", uint64(requestBody.Source)))
 			return core.Event{}, errors.NewInternalError("extension is not implemented")
@@ -51,7 +52,7 @@ func (s *Service) GetByID(ctx *context.Context, requestBody GetEventByIDRequest)
 	}
 
 	l.Info("getting event from db")
-	event, err := eventGetter.GetEventByID(requestBody.ID)
+	event, err := eventGetter.GetEventByID(ctx, requestBody.ID)
 	if err != nil {
 		l.Debug("unable to get event from db", slog.String("err", err.Error()))
 		return core.Event{}, errors.NewNotFoundError("event not found")

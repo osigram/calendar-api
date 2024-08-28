@@ -2,11 +2,12 @@ package gormstorage
 
 import (
 	"calendar-api/internal/core"
+	"context"
 	"fmt"
 )
 
-func (gs *GormStorage) GetUser(email string) (*core.User, error) {
-	db := gs.db
+func (gs *GormStorage) GetUser(ctx context.Context, email string) (*core.User, error) {
+	db := gs.db.WithContext(ctx)
 
 	var user core.User
 	result := db.Preload("ExtensionsData").Preload("Sessions").First(&user, "email = ?", email)
@@ -14,24 +15,24 @@ func (gs *GormStorage) GetUser(email string) (*core.User, error) {
 	return &user, result.Error
 }
 
-func (gs *GormStorage) AddUser(user *core.User) error {
-	db := gs.db
+func (gs *GormStorage) AddUser(ctx context.Context, user *core.User) error {
+	db := gs.db.WithContext(ctx)
 
 	result := db.Create(user)
 
 	return result.Error
 }
 
-func (gs *GormStorage) AddSession(session *core.Session) error {
-	db := gs.db
+func (gs *GormStorage) AddSession(ctx context.Context, session *core.Session) error {
+	db := gs.db.WithContext(ctx)
 
 	result := db.Create(session)
 
 	return result.Error
 }
 
-func (gs *GormStorage) UpdateUser(user *core.User) error {
-	db := gs.db
+func (gs *GormStorage) UpdateUser(ctx context.Context, user *core.User) error {
+	db := gs.db.WithContext(ctx)
 
 	if user == nil {
 		return fmt.Errorf("empty user")
@@ -42,8 +43,8 @@ func (gs *GormStorage) UpdateUser(user *core.User) error {
 	return result.Error
 }
 
-func (gs *GormStorage) UpdateSession(session *core.Session) error {
-	db := gs.db
+func (gs *GormStorage) UpdateSession(ctx context.Context, session *core.Session) error {
+	db := gs.db.WithContext(ctx)
 
 	if session == nil {
 		return fmt.Errorf("empty session")
@@ -54,8 +55,8 @@ func (gs *GormStorage) UpdateSession(session *core.Session) error {
 	return result.Error
 }
 
-func (gs *GormStorage) DeleteSession(sessionID uint) error {
-	db := gs.db
+func (gs *GormStorage) DeleteSession(ctx context.Context, sessionID uint) error {
+	db := gs.db.WithContext(ctx)
 
 	result := db.Delete(&core.Session{ID: sessionID})
 

@@ -14,10 +14,10 @@ func (s *Service) Auth(ctx *context.Context, claimsUser core.User) (Response, er
 	)
 
 	l.Debug("getting user from db")
-	user, err := s.storage.GetUser(claimsUser.Email)
+	user, err := s.storage.GetUser(ctx, claimsUser.Email)
 	if err != nil {
 		l.Debug("failed to get user from db, registering user")
-		if err = s.storage.AddUser(&claimsUser); err != nil {
+		if err = s.storage.AddUser(ctx, &claimsUser); err != nil {
 			l.Error("unable to add user to db", slog.String("err", err.Error()))
 			return Response{}, errors.NewInternalError("internal registration error")
 		}
@@ -26,7 +26,7 @@ func (s *Service) Auth(ctx *context.Context, claimsUser core.User) (Response, er
 		l.Debug("updating user data")
 		user.Name = claimsUser.Name
 		user.Picture = claimsUser.Picture
-		err = s.storage.UpdateUser(user)
+		err = s.storage.UpdateUser(ctx, user)
 		if err != nil {
 			l.Error("unable to update user data", slog.String("err", err.Error()))
 			return Response{}, errors.NewInternalError("internal registration error")
@@ -40,7 +40,7 @@ func (s *Service) Auth(ctx *context.Context, claimsUser core.User) (Response, er
 		RefreshToken: guid.String(),
 		DeviceData:   ctx.UserAgent,
 	}
-	err = s.storage.AddSession(session)
+	err = s.storage.AddSession(ctx, session)
 	if err != nil {
 		l.Error("unable to add session to db", slog.String("err", err.Error()))
 		return Response{}, errors.NewInternalError("internal auth error")

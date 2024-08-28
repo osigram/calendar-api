@@ -18,7 +18,7 @@ func (s *Service) Refresh(ctx *context.Context, requestBody RefreshRequest) (Res
 		slog.String("op", "internal.auth.Refresh"),
 	)
 
-	user, session, err := s.validateRefreshToken(requestBody.RefreshToken)
+	user, session, err := s.validateRefreshToken(ctx, requestBody.RefreshToken)
 	if err != nil {
 		return Response{}, err
 	}
@@ -26,7 +26,7 @@ func (s *Service) Refresh(ctx *context.Context, requestBody RefreshRequest) (Res
 	guid := uuid.New()
 	session.RefreshToken = guid.String()
 	session.DeviceData = ctx.UserAgent
-	err = s.storage.UpdateSession(session)
+	err = s.storage.UpdateSession(ctx, session)
 	if err != nil {
 		l.Error("failed to update session", slog.String("err", err.Error()))
 		return Response{}, errors.NewInternalError("failed to update session")
@@ -35,7 +35,7 @@ func (s *Service) Refresh(ctx *context.Context, requestBody RefreshRequest) (Res
 	return s.generateTokens(user, session)
 }
 
-func (s *Service) validateRefreshToken(refreshToken string) (*core.User, *core.Session, error) {
+func (s *Service) validateRefreshToken(ctx *context.Context, refreshToken string) (*core.User, *core.Session, error) {
 	l := s.l.With(
 		slog.String("op", "internal.auth.validateRefreshToken"),
 	)
@@ -52,7 +52,7 @@ func (s *Service) validateRefreshToken(refreshToken string) (*core.User, *core.S
 		return nil, nil, errors.NewValidationError("failed to decode session")
 	}
 
-	user, err := s.storage.GetUser(claimsSession.UserEmail)
+	user, err := s.storage.GetUser(ctx, claimsSession.UserEmail)
 	if err != nil {
 		l.Debug("failed to get user", slog.String("err", err.Error()))
 		return nil, nil, errors.NewValidationError("failed to get user")
