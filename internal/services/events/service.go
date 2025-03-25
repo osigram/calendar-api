@@ -1,0 +1,30 @@
+package events
+
+import (
+	"calendar-api/pkg/extensions"
+	"log/slog"
+)
+
+type Storage interface {
+	Adder
+	Deleter
+	ByDateGetter
+	ByIDGetter
+	Updater
+	UserGetter
+	ExtensionDataGetter
+}
+
+type Service struct {
+	l                *slog.Logger
+	storage          Storage
+	extensionsGetter extensions.Getter
+}
+
+func New(logger *slog.Logger, storage Storage, extensionsGetter extensions.Getter) *Service {
+	return &Service{
+		l:                logger,
+		storage:          storage,
+		extensionsGetter: extensionsGetter,
+	}
+}

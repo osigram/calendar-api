@@ -1,0 +1,6 @@
+url: ":8082"
+enableConsoleLogging: true
+googleClientId: ""
+accessTokenExpInMinutes: 30
+refreshTokenExpInDays: 5
+# logFilePath: "path"

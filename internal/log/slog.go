@@ -5,7 +5,7 @@ import (
 	"log/slog"
 )
 
-func NewDevLogger(w io.Writer) *slog.Logger {
+func MustNewDevLogger(w io.Writer) *slog.Logger {
 	if w == nil {
 		panic("error to initialize production logger")
 	}
@@ -18,7 +18,7 @@ func NewDevLogger(w io.Writer) *slog.Logger {
 	)
 }
 
-func NewProdLogger(w io.Writer) *slog.Logger {
+func MustNewProdLogger(w io.Writer) *slog.Logger {
 	if w == nil {
 		panic("error to initialize production logger")
 	}
